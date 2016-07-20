@@ -1,0 +1,10 @@
+version: '2'
+services:
+    pyfibot-irc-server-1:
+        build: .
+        ports:
+            - "6667:6667"
+    pyfibot-irc-server-2:
+        build: .
+        ports:
+            - "6668:6667"
