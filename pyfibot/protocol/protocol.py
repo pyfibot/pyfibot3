@@ -5,27 +5,37 @@ from pluginbase import PluginBase
 
 class Protocol(object):
     ''' Base protocol object to define common functionalities for all bots. '''
-    def __init__(self, core, name, network_configuration):
+    def __init__(self, core, name):
         self._bot = None
 
         self.core = core
         self.name = name
 
-        self.nickname = network_configuration.get('nick') or self.core.nickname
-        self.command_char = network_configuration.get('command_char') or self.core.command_char
-
-        self.admins = self.core.admins + network_configuration.get('admins', [])
-
         self.commands = {}
         self.listeners = []
         self.teardowns = []
 
-        self.load_plugins()
+        self.load_configuration()
 
     @property
     def core_configuration(self):
         ''' Get core configuration. '''
         return self.core.configuration
+
+    @property
+    def network_configuration(self):
+        ''' Get network configuration. '''
+        return self.core_configuration.get('networks', {}).get(self.name, {})
+
+    def load_configuration(self):
+        network_configuration = self.network_configuration
+
+        print('Reloading network configuration for "%s".' % (self.name))
+        self.nickname = network_configuration.get('nick') or self.core.nickname
+        self.command_char = network_configuration.get('command_char') or self.core.command_char
+
+        self.admins = self.core.admins + network_configuration.get('admins', [])
+        self.load_plugins()
 
     def is_admin(self, message_arguments):
         ''' Get users admin status. '''
@@ -47,8 +57,8 @@ class Protocol(object):
         Gets command from message.
         @return command, message_without_command
         '''
-        command = message.split(' ')[0].replace('.', '').strip()
-        message_without_command = message.replace('.%s' % command, '').strip()
+        command = message.split(' ')[0].replace(self.command_char, '').strip()
+        message_without_command = message.replace('%s%s' % (self.command_char, command), '').strip()
         return command, message_without_command
 
     def handle_message(self, sender, message, message_arguments={}):

@@ -13,11 +13,12 @@ class Core(object):
         self.networks = {}
         self.configuration = {}
         self.admins = []
+        self.command_char = '.'
+        self.configuration_file = os.path.abspath(os.path.expanduser(configuration_file))
 
-        self.load_configuration(configuration_file)
+        self.load_configuration()
         self.nickname = self.configuration.get('nick', 'pyfibot')
         self.realname = self.configuration.get('realname', 'https://github.com/lepinkainen/pyfibot')
-        self.command_char = self.configuration.get('command_char', '.')
         self.load_networks()
 
     def run(self):
@@ -25,9 +26,8 @@ class Core(object):
         loop = self.connect_networks()
         loop.run_forever()
 
-    def load_configuration(self, configuration_file):
-        ''' Loads configuration from file. '''
-        self.configuration_file = os.path.abspath(os.path.expanduser(configuration_file))
+    def load_configuration(self):
+        ''' (Re)loads configuration from file. '''
         self.configuration_path = os.path.dirname(self.configuration_file)
 
         if not os.path.exists(self.configuration_file):
@@ -37,14 +37,19 @@ class Core(object):
         with open(self.configuration_file, 'r') as f:
             self.configuration = yaml.load(f)
 
+        print('Reloading core configuration.')
+
         self.admins = self.configuration.get('admins', [])
+        self.command_char = self.configuration.get('command_char', '.')
+        for name, network in self.networks.items():
+            network.load_configuration()
 
     def load_networks(self):
         ''' Loads networks from configuration and initializes them. '''
         for name, network_configuration in self.configuration.get('networks', {}).items():
             protocol = network_configuration.get('protocol', 'irc')
             if protocol == 'irc':
-                self.networks[name] = IRC(core=self, name=name, network_configuration=network_configuration)
+                self.networks[name] = IRC(core=self, name=name)
 
     def connect_networks(self):
         ''' Creates main event loop and connects to networks. '''

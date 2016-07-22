@@ -6,8 +6,10 @@ from .protocol import Protocol
 
 class IRC(Protocol):
     ''' Bot implementing IRC protocol. '''
-    def __init__(self, core, name, network_configuration):
-        super(IRC, self).__init__(core, name, network_configuration)
+    def __init__(self, core, name):
+        super(IRC, self).__init__(core, name)
+        network_configuration = self.network_configuration
+
         self.server = network_configuration['server']
         self.port = int(network_configuration.get('port', '6667'))
         self.realname = network_configuration.get('realname') or self.core.realname
