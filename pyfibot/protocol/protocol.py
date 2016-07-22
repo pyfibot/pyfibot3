@@ -135,8 +135,10 @@ class Protocol(object):
                 if getattr(func, '_is_listener', False) is True:
                     self.register_listener(func)
 
+            print('Loaded plugin "%s".' % plugin_name)
+
     def command_help(self, bot, sender, message, message_arguments):
-        ''' Get help for bot modules '''
+        ''' Get help for bot plugins '''
         if not message:
             if self.is_admin(message_arguments):
                 # Expose all commands to admins.
@@ -184,7 +186,7 @@ class Protocol(object):
         self.listeners.append(function_handle)
 
     def register_teardown(self, function_handle):
-        ''' Registers module teardown function to the bot. '''
+        ''' Registers plugin teardown function to the bot. '''
         self.teardowns.append(function_handle)
 
     def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):

@@ -1,4 +1,4 @@
 /*.py
 !/__init__.py
-!/module_control.py
+!/plugin_control.py
 !/reload.py

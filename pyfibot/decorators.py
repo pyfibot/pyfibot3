@@ -1,9 +1,9 @@
 def init(func):
     '''
-    Decorator for module initialization. Runs when module is (re)loaded.
+    Decorator for plugin initialization. Runs when plugin is (re)loaded.
 
         @init
-        def init_module(bot):
+        def init_plugin(bot):
             pass
     '''
     func._is_init = True
@@ -12,10 +12,10 @@ def init(func):
 
 def teardown(func):
     '''
-    Decorator for module teardown. Runs before module is unloaded.
+    Decorator for plugin teardown. Runs before plugin is unloaded.
 
         @teardown
-        def teardown_module(bot):
+        def teardown_plugin(bot):
             pass
     '''
     func._is_teardown = True

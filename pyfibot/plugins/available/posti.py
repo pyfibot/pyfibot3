@@ -10,7 +10,7 @@ from urllib.parse import quote_plus
 @init
 def init(bot):
     global lang
-    lang = bot.core_configuration.get('module_posti', {}).get('language', 'en')
+    lang = bot.core_configuration.get('plugin_posti', {}).get('language', 'en')
 
 
 @command('posti')
