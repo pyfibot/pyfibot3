@@ -135,10 +135,10 @@ class Protocol(object):
 
     def register_command(self, command, function_handle):
         if command in self._get_builtin_commands().keys():
-            print('Command "%s" would override built-in command -> ignoring.')
+            print('Command "%s" would override built-in command -> ignoring.' % command)
             return
         if command in self.commands.keys():
-            print('Command "%s" overrides existing command.')
+            print('Command "%s" overrides existing command.' % command)
         self.commands[command] = function_handle
 
     def register_listener(self, function_handle):
