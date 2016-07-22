@@ -162,3 +162,6 @@ class Protocol(object):
 
     def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):
         return self.core.get_url(url, nocache=nocache, params=params, headers=headers, cookies=cookies)
+
+    def get_bs(self, url, nocache=False, params=None, headers=None, cookies=None):
+        return self.core.get_bs(url, nocache=nocache, params=params, headers=headers, cookies=cookies)

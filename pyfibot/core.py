@@ -2,6 +2,7 @@ import os
 import yaml
 import asyncio
 import requests
+from bs4 import BeautifulSoup
 from pyfibot.protocol.irc import IRC
 
 
@@ -83,3 +84,17 @@ class Core(object):
             return None
 
         return r
+
+    def get_bs(self, url, nocache=False, params=None, headers=None, cookies=None):
+        r = self.get_url(url, nocache=nocache, params=params, headers=headers, cookies=cookies)
+        if not r:
+            return None
+
+        content_type = r.headers['content-type'].split(';')[0]
+        if content_type not in ['text/html', 'text/xml', 'application/xhtml+xml']:
+            # log.debug("Content-type %s not parseable" % content_type)
+            return None
+
+        if r.content:
+            return BeautifulSoup(r.content, 'html.parser')
+        return None

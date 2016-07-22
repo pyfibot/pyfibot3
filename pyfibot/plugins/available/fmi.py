@@ -1,7 +1,6 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 from datetime import datetime, timedelta
-from bs4 import BeautifulSoup
 from math import isnan
 from pyfibot.decorators import command
 
@@ -27,8 +26,7 @@ def command_fmi(bot, sender, message, message_arguments):
         'starttime': starttime
     }
 
-    r = bot.get_url('http://data.fmi.fi/fmi-apikey/%s/wfs' % 'c86a0cb3-e0bf-4604-bfe9-de3ca92e0afc', params=params)
-    bs = BeautifulSoup(r.text, 'html.parser')
+    bs = bot.get_bs('http://data.fmi.fi/fmi-apikey/%s/wfs' % 'c86a0cb3-e0bf-4604-bfe9-de3ca92e0afc', params=params)
 
     # Get FMI name, gives the observation place more accurately
     try:
