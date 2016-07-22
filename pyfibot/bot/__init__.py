@@ -68,7 +68,7 @@ class Bot(object):
             return
 
         for listener in self.listeners:
-            listener(self, sender, message, message_arguments=message_arguments)
+            self.core.loop.run_in_executor(None, listener, self, sender, message, message_arguments)
 
         if message.startswith(self.command_char):
             command, message_without_command = self.get_command(message)
@@ -79,7 +79,7 @@ class Bot(object):
             if command in self.commands.keys():
                 if getattr(self.commands[command], '_is_admin_command', False) is True and not self.is_admin(message_arguments):
                     return self.respond('This command is only for admins.', message_arguments)
-                self.commands[command](self, sender, message_without_command, message_arguments=message_arguments)
+                self.core.loop.run_in_executor(None, self.commands[command], self, sender, message_without_command, message_arguments)
 
     def _get_builtin_commands(self):
         ''' Gets commands built in to the bot. '''

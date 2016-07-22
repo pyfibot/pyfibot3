@@ -53,10 +53,10 @@ class Core(object):
 
     def connect_networks(self):
         ''' Creates main event loop and connects to networks. '''
-        loop = asyncio.get_event_loop()
+        self.loop = asyncio.get_event_loop()
         for network in self.networks.values():
-            network.connect(loop)
-        return loop
+            network.connect()
+        return self.loop
 
     def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):
         ''' Fetch url. '''
