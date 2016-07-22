@@ -10,7 +10,7 @@ TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 @command(['sää', 'saa', 'fmi'])
 def command_fmi(bot, sender, message, message_arguments):
-    ''' Fetch weather information from Finnish Meteorological Institute '''
+    ''' Fetch weather information from Finnish Meteorological Institute. '''
     if message:
         place = message
     else:

@@ -6,6 +6,7 @@ from pyfibot.database import Database
 
 @listener
 def save_message(bot, sender, message, message_arguments):
+    ''' Log all messages to database. '''
     target = message_arguments.get('target')
     # Don't save, if target is not defined or this is a private message.
     if not target or target == bot.nickname:

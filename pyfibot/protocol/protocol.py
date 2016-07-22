@@ -4,6 +4,7 @@ from pluginbase import PluginBase
 
 
 class Protocol(object):
+    ''' Base protocol object to define common functionalities for all bots. '''
     def __init__(self, core, name, network_configuration):
         self._bot = None
 
@@ -23,23 +24,32 @@ class Protocol(object):
 
     @property
     def core_configuration(self):
+        ''' Get core configuration. '''
         return self.core.configuration
 
     def is_admin(self, message_arguments):
+        ''' Get users admin status. '''
         return False
 
     def connect(self, loop):
+        ''' Connect to server. '''
         raise NotImplementedError
 
     def respond(self, message, message_arguments):
+        ''' Respond to message sent to the bot. '''
         raise NotImplementedError
 
     def get_command(self, message):
+        '''
+        Gets command from message.
+        @return command, message_without_command
+        '''
         command = message.split(' ')[0].replace('.', '').strip()
         message_without_command = message.replace('.%s' % command, '').strip()
         return command, message_without_command
 
     def handle_message(self, sender, message, message_arguments={}):
+        ''' Message handler, calling all listeners, parsing and running commands if found. '''
         # Don't react to own messages.
         if sender == self.nickname:
             return
@@ -59,11 +69,13 @@ class Protocol(object):
                 self.commands[command](self, sender, message_without_command, message_arguments=message_arguments)
 
     def _get_builtin_commands(self):
+        ''' Gets commands built in to the bot. '''
         return {
             'help': self.command_help,
         }
 
     def load_plugins(self):
+        ''' (Re)loads all plugins, calling teardowns before unloading them. '''
         for teardown in self.teardowns:
             teardown(self._bot)
 
@@ -134,17 +146,18 @@ class Protocol(object):
         self.respond(docstring.split('\n')[0], message_arguments=message_arguments)
 
     def register_command(self, command, function_handle):
-        if command in self._get_builtin_commands().keys():
-            print('Command "%s" would override built-in command -> ignoring.' % command)
+        ''' Registers command to the bot. '''
+        if command in self.commands.keys() or command in self._get_builtin_commands().keys():
+            print('Command "%s" from "%s" would override existing command -> ignoring.' % (command, function_handle.__name__))
             return
-        if command in self.commands.keys():
-            print('Command "%s" overrides existing command.' % command)
         self.commands[command] = function_handle
 
     def register_listener(self, function_handle):
+        ''' Registers listener to the bot. '''
         self.listeners.append(function_handle)
 
     def register_teardown(self, function_handle):
+        ''' Registers module teardown function to the bot. '''
         self.teardowns.append(function_handle)
 
     def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):

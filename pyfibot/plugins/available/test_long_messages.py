@@ -5,6 +5,7 @@ from pyfibot.decorators import admin_command
 
 @admin_command('long')
 def long(bot, sender, message, message_arguments):
+    ''' Test function to test long messages. To be removed. '''
     length = int(message.strip())
     response = ''.join(random.choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in range(length))
 

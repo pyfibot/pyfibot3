@@ -36,4 +36,5 @@ def _fetch_restaurant(bot, restaurant):
 
 @command('kurnis')
 def kurniekka(bot, sender, message, message_arguments):
+    ''' Fetch menu from Kurniekka. '''
     bot.respond(_fetch_restaurant(bot, 'laseri'), message_arguments)

@@ -5,6 +5,19 @@ import dataset
 
 
 class Database(object):
+    '''
+    Connector to the bot's database. To be used via with-statement:
+
+        with Database(bot) as db:
+            # do something with database.
+            table = db['test']
+            test.insert({'message': 'test message'})
+
+    Provides a dataset-interface to the SQLite3 database.
+    See: https://dataset.readthedocs.io/en/latest/
+
+    '''
+
     def __init__(self, bot):
         self._core = bot.core
         self._database_file = os.path.join(self._core.configuration_path, 'database.sqlite3')

@@ -2,12 +2,12 @@
 Get shipment tracking info from Posti
 """
 
-from pyfibot.decorators import initialize, command
+from pyfibot.decorators import init, command
 from pyfibot.utils import parse_datetime, get_utc_datetime
 from urllib.parse import quote_plus
 
 
-@initialize
+@init
 def init(bot):
     global lang
     lang = bot.core_configuration.get('module_posti', {}).get('language', 'en')
@@ -15,7 +15,7 @@ def init(bot):
 
 @command('posti')
 def posti(bot, sender, message, message_arguments):
-    """Get latest tracking event for a shipment from Posti. Usage: .posti JJFI00000000000000"""
+    ''' Get latest tracking event for a shipment from Posti. Usage: .posti JJFI00000000000000 '''
 
     if not message:
         return bot.respond('Tracking ID is required.', message_arguments)

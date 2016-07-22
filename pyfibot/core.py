@@ -6,6 +6,8 @@ from pyfibot.protocol.irc import IRC
 
 
 class Core(object):
+    ''' Bot core, holding the configuration and connecting to networks. '''
+
     def __init__(self, configuration_file='~/.config/pyfibot/pyfibot.yml', log_level='info'):
         self.networks = {}
         self.configuration = {}
@@ -18,10 +20,12 @@ class Core(object):
         self.load_networks()
 
     def run(self):
+        ''' Run bot. '''
         loop = self.connect_networks()
         loop.run_forever()
 
     def load_configuration(self, configuration_file):
+        ''' Loads configuration from file. '''
         self.configuration_file = os.path.abspath(os.path.expanduser(configuration_file))
         self.configuration_path = os.path.dirname(self.configuration_file)
 
@@ -35,18 +39,21 @@ class Core(object):
         self.admins = self.configuration.get('admins', [])
 
     def load_networks(self):
+        ''' Loads networks from configuration and initializes them. '''
         for name, network_configuration in self.configuration.get('networks', {}).items():
             protocol = network_configuration.get('protocol', 'irc')
             if protocol == 'irc':
                 self.networks[name] = IRC(core=self, name=name, network_configuration=network_configuration)
 
     def connect_networks(self):
+        ''' Creates main event loop and connects to networks. '''
         loop = asyncio.get_event_loop()
         for network in self.networks.values():
             network.connect(loop)
         return loop
 
     def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):
+        ''' Fetch url. '''
         s = requests.session()
         s.stream = True  # Don't fetch content unless asked
         s.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0'})
