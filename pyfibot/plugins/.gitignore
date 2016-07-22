@@ -1,4 +1,4 @@
-/echo.py
-/logger.py
-/skinfo.py
-/test_long_messages.py
+/*.py
+!/__init__.py
+!/module_control.py
+!/reload.py
