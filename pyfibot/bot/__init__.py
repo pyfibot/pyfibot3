@@ -144,18 +144,8 @@ class Bot(object):
     def command_help(self, bot, sender, message, message_arguments):
         ''' Get help for bot plugins '''
         if not message:
-            if self.is_admin(message_arguments):
-                # Expose all commands to admins.
-                return self.respond(
-                    'Available commands are: %s' % (
-                        ', '.join(sorted(self.commands.keys()))
-                    ),
-                    message_arguments=message_arguments
-                )
-
-            # Don't expose admin commands to regular users.
-            return self.respond(
-                'Available commands are: %s' % (
+            self.respond(
+                'Available commands for users are: %s' % (
                     ', '.join(sorted([
                         command
                         for command, function in self.commands.items() if getattr(function, '_is_admin_command', False) is False
@@ -163,6 +153,18 @@ class Bot(object):
                 ),
                 message_arguments=message_arguments
             )
+            # In addition to the normal commands, give admin commands to admins.
+            if self.is_admin(message_arguments):
+                self.respond(
+                    'Available commands for admins are: %s' % (
+                        ', '.join(sorted([
+                            command
+                            for command, function in self.commands.items() if getattr(function, '_is_admin_command', False) is True
+                        ]))
+                    ),
+                    message_arguments=message_arguments
+                )
+            return
 
         if message not in self.commands.keys():
             return self.respond(
