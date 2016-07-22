@@ -5,9 +5,9 @@ from pyfibot.database import Database
 
 
 @listener
-def save_message(bot, sender, message, message_arguments):
+def save_message(bot, sender, message, raw_message):
     ''' Log all messages to database. '''
-    target = message_arguments.get('target')
+    target = raw_message.get('target')
     # Don't save, if target is not defined or this is a private message.
     if not target or target == bot.nickname:
         return
@@ -17,6 +17,6 @@ def save_message(bot, sender, message, message_arguments):
         table.insert({
             'time': get_utc_datetime(),
             'sender': sender,
-            'target': message_arguments.get('target', 'unknown'),
+            'target': raw_message.get('target', 'unknown'),
             'message': message,
         })

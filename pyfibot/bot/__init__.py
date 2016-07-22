@@ -56,7 +56,7 @@ class Bot(object):
     def teardowns(self):
         return self.callbacks.get('teardowns', [])
 
-    def is_admin(self, message_arguments):
+    def is_admin(self, raw_message):
         ''' Get users admin status. '''
         return False
 
@@ -67,7 +67,7 @@ class Bot(object):
     def cleanup_response(self, response):
         return response.strip()
 
-    def respond(self, message, message_arguments):
+    def respond(self, message, raw_message):
         ''' Respond to message sent to the bot. '''
         raise NotImplementedError
 
@@ -80,14 +80,14 @@ class Bot(object):
         message_without_command = message.replace('%s%s' % (self.command_char, command), '').strip()
         return command, message_without_command
 
-    def handle_message(self, sender, message, message_arguments={}):
+    def handle_message(self, sender, message, raw_message={}):
         ''' Message handler, calling all listeners, parsing and running commands if found. '''
         # Don't react to own messages.
         if sender == self.nickname:
             return
 
         for listener in self.listeners:
-            self.core.loop.run_in_executor(None, listener, self, sender, message, message_arguments)
+            self.core.loop.run_in_executor(None, listener, self, sender, message, raw_message)
 
         if message.startswith(self.command_char):
             command, message_without_command = self.get_command(message)
@@ -96,9 +96,9 @@ class Bot(object):
                 return
 
             if command in self.commands.keys():
-                if getattr(self.commands[command], '_is_admin_command', False) is True and not self.is_admin(message_arguments):
-                    return self.respond('This command is only for admins.', message_arguments)
-                self.core.loop.run_in_executor(None, self.commands[command], self, sender, message_without_command, message_arguments)
+                if getattr(self.commands[command], '_is_admin_command', False) is True and not self.is_admin(raw_message):
+                    return self.respond('This command is only for admins.', raw_message)
+                self.core.loop.run_in_executor(None, self.commands[command], self, sender, message_without_command, raw_message)
 
     def _get_builtin_commands(self):
         ''' Gets commands built in to the bot. '''
@@ -155,7 +155,7 @@ class Bot(object):
 
             print('Loaded plugin "%s".' % plugin_name)
 
-    def command_help(self, bot, sender, message, message_arguments):
+    def command_help(self, bot, sender, message, raw_message):
         ''' Get help for bot plugins '''
         if not message:
             self.respond(
@@ -165,10 +165,10 @@ class Bot(object):
                         for command, function in self.commands.items() if getattr(function, '_is_admin_command', False) is False
                     ]))
                 ),
-                message_arguments=message_arguments
+                raw_message=raw_message
             )
             # In addition to the normal commands, give admin commands to admins.
-            if self.is_admin(message_arguments):
+            if self.is_admin(raw_message):
                 self.respond(
                     'Available commands for admins are: %s' % (
                         ', '.join(sorted([
@@ -176,7 +176,7 @@ class Bot(object):
                             for command, function in self.commands.items() if getattr(function, '_is_admin_command', False) is True
                         ]))
                     ),
-                    message_arguments=message_arguments
+                    raw_message=raw_message
                 )
             return
 
@@ -186,13 +186,13 @@ class Bot(object):
                     message,
                     ', '.join(sorted(self.commands.keys()))
                 ),
-                message_arguments=message_arguments
+                raw_message=raw_message
             )
 
         docstring = self.commands[message].__doc__
         if not docstring:
-            return self.respond('Command "%s" has no help.' % message, message_arguments=message_arguments)
-        self.respond(docstring.split('\n')[0], message_arguments=message_arguments)
+            return self.respond('Command "%s" has no help.' % message, raw_message=raw_message)
+        self.respond(docstring.split('\n')[0], raw_message=raw_message)
 
     def register_command(self, command, function_handle):
         ''' Registers command to the bot. '''

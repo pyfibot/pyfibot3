@@ -25,11 +25,11 @@ class IRCbot(Bot):
         })
         return commands
 
-    def is_admin(self, message_arguments):
+    def is_admin(self, raw_message):
         identifier = '%s!%s@%s' % (
-            message_arguments.get('nick'),
-            message_arguments.get('user'),
-            message_arguments.get('host')
+            raw_message.get('nick'),
+            raw_message.get('user'),
+            raw_message.get('host')
         )
         return any([admin == identifier for admin in self.admins])
 
@@ -55,15 +55,15 @@ class IRCbot(Bot):
             bot.send('PONG', message=message)
 
         @bot.on('PRIVMSG')
-        def on_privmsg(**message_arguments):
-            sender = message_arguments.get('nick')
-            message = message_arguments.get('message')
-            self.handle_message(sender, message, message_arguments=message_arguments)
+        def on_privmsg(**raw_message):
+            sender = raw_message.get('nick')
+            message = raw_message.get('message')
+            self.handle_message(sender, message, raw_message=raw_message)
 
         @bot.on('response')
-        def on_respose(message, message_arguments):
-            nick = message_arguments.get('nick')
-            target = message_arguments.get('target')
+        def on_respose(message, raw_message):
+            nick = raw_message.get('nick')
+            target = raw_message.get('target')
 
             # Don't react to own messages
             if nick == self.nickname:
@@ -74,47 +74,47 @@ class IRCbot(Bot):
             bot.send('PRIVMSG', target=target, message=message)
 
         @bot.on('JOIN')
-        def on_join(**message_arguments):
-            channel = self.find_channel(message_arguments.get('channel'))
+        def on_join(**raw_message):
+            channel = self.find_channel(raw_message.get('channel'))
             if not channel:
                 return
 
-            nick = message_arguments.get('nick')
+            nick = raw_message.get('nick')
             if nick == self.nickname:
-                channel.on_bot_join(**message_arguments)
+                channel.on_bot_join(**raw_message)
                 return
 
-            channel.on_user_join(**message_arguments)
+            channel.on_user_join(**raw_message)
 
         @bot.on('PART')
-        def on_part(**message_arguments):
-            channel = self.find_channel(message_arguments.get('channel'))
+        def on_part(**raw_message):
+            channel = self.find_channel(raw_message.get('channel'))
             if not channel:
                 return
 
-            nick = message_arguments.get('nick')
+            nick = raw_message.get('nick')
             if nick == self.nickname:
-                channel.on_bot_part(**message_arguments)
+                channel.on_bot_part(**raw_message)
                 return
 
-            channel.on_user_part(**message_arguments)
+            channel.on_user_part(**raw_message)
 
         @bot.on('RPL_WHOREPLY')
-        def on_rpl_who(**message_arguments):
-            channel = self.find_channel(message_arguments.get('channel'))
+        def on_rpl_who(**raw_message):
+            channel = self.find_channel(raw_message.get('channel'))
             if not channel:
                 return
 
-            user = channel.find_user(nick=message_arguments.get('nick'))
+            user = channel.find_user(nick=raw_message.get('nick'))
             if not user:
-                channel.users.append(IRCUser(self, **message_arguments))
+                channel.users.append(IRCUser(self, **raw_message))
                 return
 
-            user.update_information(**message_arguments)
+            user.update_information(**raw_message)
 
         @bot.on('QUIT')
-        def on_quit(**message_arguments):
-            nick = message_arguments.get('nick')
+        def on_quit(**raw_message):
+            nick = raw_message.get('nick')
 
             for channel in self.channels:
                 channel.on_user_quit(nick)
@@ -130,9 +130,9 @@ class IRCbot(Bot):
                 return channel
         return None
 
-    def command_join(self, bot, sender, message, message_arguments):
+    def command_join(self, bot, sender, message, raw_message):
         ''' Command to join IRC channels. '''
-        if not self.is_admin(message_arguments):
+        if not self.is_admin(raw_message):
             return
 
         existing_channel = self.find_channel(message.split(' ')[0])
@@ -146,8 +146,8 @@ class IRCbot(Bot):
     # Set join as admin command.
     command_join._is_admin_command = True
 
-    def respond(self, message, message_arguments):
-        self._bot.trigger('response', message=self.cleanup_response(message), message_arguments=message_arguments)
+    def respond(self, message, raw_message):
+        self._bot.trigger('response', message=self.cleanup_response(message), raw_message=raw_message)
 
 
 class IRCChannel(object):
@@ -166,28 +166,28 @@ class IRCChannel(object):
         else:
             self.irc_instance._bot.send('JOIN', channel=self.name)
 
-    def on_bot_join(self, **message_arguments):
+    def on_bot_join(self, **raw_message):
         ''' Callback to call when bot has joined the channel. '''
-        print('Joined %s' % (message_arguments.get('channel')))
+        print('Joined %s' % (raw_message.get('channel')))
         self.irc_instance._bot.send('WHO', mask=self.name)
 
-    def on_user_join(self, **message_arguments):
+    def on_user_join(self, **raw_message):
         ''' Callback to call when an user has joined the channel. '''
-        nick = message_arguments.get('nick')
+        nick = raw_message.get('nick')
 
         if not nick or self.find_user(nick):
             return
 
-        self.users.append(IRCUser(self.irc_instance, **message_arguments))
+        self.users.append(IRCUser(self.irc_instance, **raw_message))
 
-    def on_bot_part(self, **message_arguments):
+    def on_bot_part(self, **raw_message):
         ''' Callback to call when bot parts the channel. '''
-        print('Parted %s' % (message_arguments.get('channel')))
-        print(message_arguments)
+        print('Parted %s' % (raw_message.get('channel')))
+        print(raw_message)
 
-    def on_user_part(self, **message_arguments):
+    def on_user_part(self, **raw_message):
         ''' Callback to call when an user parts the channel. '''
-        nick = message_arguments.get('nick')
+        nick = raw_message.get('nick')
         user = self.find_user(nick)
         if not nick or not user:
             return
@@ -212,9 +212,9 @@ class IRCChannel(object):
 
 class IRCUser(object):
     ''' Object to hold information of an IRC user. '''
-    def __init__(self, irc_instance, **message_arguments):
+    def __init__(self, irc_instance, **raw_message):
         self.channel_modes = {}
-        self.update_information(**message_arguments)
+        self.update_information(**raw_message)
 
     def __repr__(self):
         return '<IRCUser %s!%s@%s>' % (
@@ -223,17 +223,17 @@ class IRCUser(object):
             self.host
         )
 
-    def update_information(self, **message_arguments):
+    def update_information(self, **raw_message):
         ''' Update user information from channel activities. '''
-        self.nick = message_arguments.get('nick')
+        self.nick = raw_message.get('nick')
 
-        self.real_name = message_arguments.get('real_name')
-        self.user = message_arguments.get('user')
-        self.host = message_arguments.get('host')
+        self.real_name = raw_message.get('real_name')
+        self.user = raw_message.get('user')
+        self.host = raw_message.get('host')
 
-        channel = message_arguments.get('channel')
+        channel = raw_message.get('channel')
         if channel:
-            self.channel_modes[channel] = list(message_arguments.get('hg_code', ''))
+            self.channel_modes[channel] = list(raw_message.get('hg_code', ''))
 
     def is_op(self, channel):
         ''' Check if user is op in channel. '''

@@ -11,7 +11,7 @@ from pyfibot.decorators import listener
 
 
 @listener
-def spotify(bot, sender, message, message_arguments):
+def spotify(bot, sender, message, raw_message):
     """Grab Spotify URLs from the messages and handle them"""
 
     m = re.match('.*(https?:\/\/(open|play).spotify.com\/|spotify:)(?P<item>album|artist|track|user[:\/]\S+[:\/]playlist)[:\/](?P<id>[a-zA-Z0-9]+)\/?.*', message)
@@ -58,4 +58,4 @@ def spotify(bot, sender, message, message_arguments):
     if item[0] == 'tracks':
         title += ' - %s - %s' % (data['album']['name'], data['name'])
 
-    return bot.respond(title, message_arguments)
+    return bot.respond(title, raw_message)

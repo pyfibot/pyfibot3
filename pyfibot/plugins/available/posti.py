@@ -14,11 +14,11 @@ def init(bot):
 
 
 @command('posti')
-def posti(bot, sender, message, message_arguments):
+def posti(bot, sender, message, raw_message):
     ''' Get latest tracking event for a shipment from Posti. Usage: .posti JJFI00000000000000 '''
 
     if not message:
-        return bot.respond('Tracking ID is required.', message_arguments)
+        return bot.respond('Tracking ID is required.', raw_message)
 
     url = 'http://www.posti.fi/henkiloasiakkaat/seuranta/api/shipments/%s' % quote_plus(message)
 
@@ -28,7 +28,7 @@ def posti(bot, sender, message, message_arguments):
         data = r.json()
         shipment = data['shipments'][0]
     except Exception:
-        return bot.respond('Error while getting tracking data. Check the tracking ID or try again later.', message_arguments)
+        return bot.respond('Error while getting tracking data. Check the tracking ID or try again later.', raw_message)
 
     phase = shipment['phase']
     eta_timestamp = shipment.get('estimatedDeliveryTime')
@@ -45,4 +45,4 @@ def posti(bot, sender, message, message_arguments):
         eta_txt = eta_dt.strftime('%d.%m.%Y %H:%M')
         msg = 'ETA %s - %s' % (eta_txt, msg)
 
-    bot.respond(msg, message_arguments)
+    bot.respond(msg, raw_message)

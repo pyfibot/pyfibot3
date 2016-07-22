@@ -27,7 +27,7 @@ def listener(func):
     Decorator to build listener listening all messages sent to the bot.
 
         @listener
-        def print_all(bot, sender, message, message_arguments):
+        def print_all(bot, sender, message, raw_message):
             print(sender, message)
     '''
     func._is_listener = True
@@ -39,15 +39,15 @@ class command(object):
     Decorator to build commands to the bot.
 
         @command('echo')
-        def echo(bot, sender, message, message_arguments):
-            bot.respond(message, message_arguments)
+        def echo(bot, sender, message, raw_message):
+            bot.respond(message, raw_message)
     '''
     def __init__(self, command_name):
         self.command_name = command_name
 
     def __call__(self, func):
-        def command_wrapper(bot, sender, message, message_arguments):
-            return func(bot, sender, message, message_arguments)
+        def command_wrapper(bot, sender, message, raw_message):
+            return func(bot, sender, message, raw_message)
 
         command_wrapper._command = self.command_name
         command_wrapper._is_command = True
@@ -59,15 +59,15 @@ class admin_command(object):
     Decorator to build administrator commands to the bot.
 
         @admin_command('admin_echo')
-        def admin_echo(bot, sender, message, message_arguments):
-            bot.respond(message, message_arguments)
+        def admin_echo(bot, sender, message, raw_message):
+            bot.respond(message, raw_message)
     '''
     def __init__(self, command_name):
         self.command_name = command_name
 
     def __call__(self, func):
-        def command_wrapper(bot, sender, message, message_arguments):
-            return func(bot, sender, message, message_arguments)
+        def command_wrapper(bot, sender, message, raw_message):
+            return func(bot, sender, message, raw_message)
 
         command_wrapper._command = self.command_name
         command_wrapper._is_command = True

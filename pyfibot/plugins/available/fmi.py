@@ -14,7 +14,7 @@ def init_fmi(bot):
 
 
 @command(['sää', 'saa', 'fmi'])
-def command_fmi(bot, sender, message, message_arguments):
+def command_fmi(bot, sender, message, raw_message):
     ''' Fetch weather information from Finnish Meteorological Institute. '''
     if message:
         place = message
@@ -39,7 +39,7 @@ def command_fmi(bot, sender, message, message_arguments):
     try:
         place = bs.find('gml:name').text
     except AttributeError:
-        return bot.respond('Paikkaa ei löytynyt.', message_arguments)
+        return bot.respond('Paikkaa ei löytynyt.', raw_message)
 
     # Loop through measurement time series -objects and gather values
     values = {}
@@ -70,4 +70,4 @@ def command_fmi(bot, sender, message, message_arguments):
         text.append('pilvisyys: %i/8' % int(values['n_man']))
 
     # Return place and values to the channel
-    bot.respond('%s: %s' % (place, ', '.join(text)), message_arguments)
+    bot.respond('%s: %s' % (place, ', '.join(text)), raw_message)

@@ -5,7 +5,7 @@ from pyfibot.decorators import admin_command
 
 
 @admin_command('long')
-def long(bot, sender, message, message_arguments):
+def long(bot, sender, message, raw_message):
     ''' Test function to test long messages. To be removed. '''
     length = int(message.strip())
     response = ''.join(random.choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in range(length))
@@ -19,17 +19,17 @@ def long(bot, sender, message, message_arguments):
 
         split_response.append(response[split_locations[i]:split_locations[i + 1]])
 
-    bot.respond(' '.join(split_response), message_arguments)
+    bot.respond(' '.join(split_response), raw_message)
 
 
 @admin_command('sleep')
-def sleep(bot, sender, message, message_arguments):
+def sleep(bot, sender, message, raw_message):
     ''' Test function to test plugins hanging. To be removed. '''
     try:
         sleep_time = int(message)
     except:
         return
 
-    bot.respond('Sleeping for %i seconds.' % sleep_time, message_arguments)
+    bot.respond('Sleeping for %i seconds.' % sleep_time, raw_message)
     time.sleep(sleep_time)
-    bot.respond('Slept for %i seconds.' % sleep_time, message_arguments)
+    bot.respond('Slept for %i seconds.' % sleep_time, raw_message)
