@@ -10,10 +10,7 @@ class Bot(object):
 
         self.core = core
         self.name = name
-
-        self.commands = {}
-        self.listeners = []
-        self.teardowns = []
+        self.callbacks = {}
 
         self.load_configuration()
 
@@ -36,6 +33,28 @@ class Bot(object):
 
         self.admins = self.core.admins + network_configuration.get('admins', [])
         self.load_plugins()
+
+    def init_callbacks(self):
+        for teardown in self.teardowns:
+            teardown(self._bot)
+
+        self.callbacks = {
+            'commands': self._get_builtin_commands(),
+            'listeners': [],
+            'teardowns': [],
+        }
+
+    @property
+    def commands(self):
+        return self.callbacks.get('commands', {})
+
+    @property
+    def listeners(self):
+        return self.callbacks.get('listeners', [])
+
+    @property
+    def teardowns(self):
+        return self.callbacks.get('teardowns', [])
 
     def is_admin(self, message_arguments):
         ''' Get users admin status. '''
@@ -89,17 +108,12 @@ class Bot(object):
 
     def load_plugins(self):
         ''' (Re)loads all plugins, calling teardowns before unloading them. '''
-        for teardown in self.teardowns:
-            teardown(self._bot)
-
         here = os.path.abspath(os.path.dirname(__file__))
         self.plugin_base = PluginBase(package='pyfibot.plugins')
         self.plugin_source = self.plugin_base.make_plugin_source(searchpath=[os.path.abspath(os.path.join(here, '../plugins'))])
 
-        # TODO: replace with common "self.callbacks" dictionary?
-        self.commands = self._get_builtin_commands()
-        self.listeners = []
-        self.teardowns = []
+        # Re-initialize all callback functions.
+        self.init_callbacks()
 
         for plugin_name in self.plugin_source.list_plugins():
             try:
@@ -185,15 +199,15 @@ class Bot(object):
         if command in self.commands.keys():
             print('Command "%s" from "%s" would override existing command -> ignoring.' % (command, function_handle.__name__))
             return
-        self.commands[command] = function_handle
+        self.callbacks['commands'][command] = function_handle
 
     def register_listener(self, function_handle):
         ''' Registers listener to the bot. '''
-        self.listeners.append(function_handle)
+        self.callbacks['listeners'].append(function_handle)
 
     def register_teardown(self, function_handle):
         ''' Registers plugin teardown function to the bot. '''
-        self.teardowns.append(function_handle)
+        self.callbacks['teardowns'].append(function_handle)
 
     def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):
         return self.core.get_url(url, nocache=nocache, params=params, headers=headers, cookies=cookies)
