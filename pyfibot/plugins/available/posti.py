@@ -3,7 +3,7 @@ Get shipment tracking info from Posti
 """
 
 from pyfibot.decorators import init, command
-from pyfibot.utils import parse_datetime, get_utc_datetime
+from pyfibot.utils import parse_datetime, get_relative_time_string
 from urllib.parse import quote_plus
 
 
@@ -34,23 +34,10 @@ def posti(bot, sender, message, message_arguments):
     eta_timestamp = shipment.get('estimatedDeliveryTime')
     latest_event = shipment['events'][0]
 
-    dt = get_utc_datetime() - parse_datetime(latest_event['timestamp'])
-
-    agestr = []
-    if dt.days > 0:
-        agestr.append('%dd' % dt.days)
-    secs = dt.seconds
-    hours, minutes = secs // 3600, secs // 60 % 60
-    if hours > 0:
-        agestr.append('%dh' % hours)
-    if minutes > 0:
-        agestr.append('%dm' % minutes)
-
-    ago = '%s %s' % (' '.join(agestr), {'fi': 'sitten', 'sv': 'sedan', 'en': 'ago'}[lang])
     description = latest_event['description'][lang]
     location = '%s %s' % (latest_event['locationCode'], latest_event['locationName'])
 
-    msg = ' - '.join([ago, description, location])
+    msg = ' - '.join([get_relative_time_string(parse_datetime(latest_event['timestamp']), lang=lang), description, location])
 
     if phase != 'DELIVERED' and eta_timestamp:
         eta_dt = parse_datetime(eta_timestamp)
