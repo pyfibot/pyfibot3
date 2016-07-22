@@ -109,7 +109,7 @@ class Bot(object):
     def load_plugins(self):
         ''' (Re)loads all plugins, calling teardowns before unloading them. '''
         here = os.path.abspath(os.path.dirname(__file__))
-        self.plugin_base = PluginBase(package='pyfibot.plugins')
+        self.plugin_base = PluginBase(package='unexistant')
         self.plugin_source = self.plugin_base.make_plugin_source(searchpath=[os.path.abspath(os.path.join(here, '../plugins'))])
 
         # Re-initialize all callback functions.
