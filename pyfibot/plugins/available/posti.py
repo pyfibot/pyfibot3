@@ -34,10 +34,11 @@ def posti(bot, sender, message, message_arguments):
     eta_timestamp = shipment.get('estimatedDeliveryTime')
     latest_event = shipment['events'][0]
 
+    event_time = get_relative_time_string(parse_datetime(latest_event['timestamp']), lang=lang)
     description = latest_event['description'][lang]
     location = '%s %s' % (latest_event['locationCode'], latest_event['locationName'])
 
-    msg = ' - '.join([get_relative_time_string(parse_datetime(latest_event['timestamp']), lang=lang), description, location])
+    msg = ' - '.join([event_time, description, location])
 
     if phase != 'DELIVERED' and eta_timestamp:
         eta_dt = parse_datetime(eta_timestamp)
