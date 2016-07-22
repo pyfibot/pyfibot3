@@ -125,12 +125,26 @@ class Protocol(object):
     def command_help(self, bot, sender, message, message_arguments):
         ''' Get help for bot modules '''
         if not message:
+            if self.is_admin(message_arguments):
+                # Expose all commands to admins.
+                return self.respond(
+                    'Available commands are: %s' % (
+                        ', '.join(self.commands.keys())
+                    ),
+                    message_arguments=message_arguments
+                )
+
+            # Don't expose admin commands to regular users.
             return self.respond(
                 'Available commands are: %s' % (
-                    ', '.join(self.commands.keys())
+                    ', '.join([
+                        command
+                        for command, function in self.commands.items() if getattr(function, '_is_admin_command', False) is False
+                    ])
                 ),
                 message_arguments=message_arguments
             )
+
         if message not in self.commands.keys():
             return self.respond(
                 'Command "%s" unknown. Available commands are: %s' % (
@@ -147,7 +161,7 @@ class Protocol(object):
 
     def register_command(self, command, function_handle):
         ''' Registers command to the bot. '''
-        if command in self.commands.keys() or command in self._get_builtin_commands().keys():
+        if command in self.commands.keys():
             print('Command "%s" from "%s" would override existing command -> ignoring.' % (command, function_handle.__name__))
             return
         self.commands[command] = function_handle

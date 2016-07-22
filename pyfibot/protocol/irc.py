@@ -141,6 +141,8 @@ class IRC(Protocol):
         channel = IRCChannel(self, *message.split(' '))
         channel.join()
         self.channels.append(channel)
+    # Set join as admin command.
+    command_join._is_admin_command = True
 
     def respond(self, message, message_arguments):
         self._bot.trigger('response', message=message, message_arguments=message_arguments)
