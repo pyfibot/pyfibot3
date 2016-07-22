@@ -30,6 +30,7 @@ class Core(object):
         self.configuration_path = os.path.dirname(self.configuration_file)
 
         if not os.path.exists(self.configuration_file):
+            # TODO: Maybe actually create the example conf?
             print('Configuration file does not exist in "%s". Creating an example configuration for editing.' % (self.configuration_file))
             raise IOError
 
