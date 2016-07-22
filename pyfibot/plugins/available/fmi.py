@@ -2,9 +2,15 @@
 from __future__ import unicode_literals, print_function, division
 from datetime import datetime, timedelta
 from math import isnan
-from pyfibot.decorators import command
+from pyfibot.decorators import command, init
 
 TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
+
+
+@init
+def init_fmi(bot):
+    global default_place
+    default_place = bot.core_configuration.get('plugin_fmi', {}).get('default_place', 'Helsinki')
 
 
 @command(['sää', 'saa', 'fmi'])
@@ -13,7 +19,8 @@ def command_fmi(bot, sender, message, message_arguments):
     if message:
         place = message
     else:
-        place = 'Lappeenranta'
+        global default_place
+        place = default_place
 
     starttime = (datetime.utcnow() - timedelta(minutes=10)).strftime(TIME_FORMAT) + 'Z'
     params = {
