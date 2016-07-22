@@ -35,6 +35,9 @@ class Protocol(object):
         ''' Connect to server. '''
         raise NotImplementedError
 
+    def cleanup_response(self, response):
+        return response.strip()
+
     def respond(self, message, message_arguments):
         ''' Respond to message sent to the bot. '''
         raise NotImplementedError

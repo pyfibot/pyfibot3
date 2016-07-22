@@ -145,7 +145,7 @@ class IRC(Protocol):
     command_join._is_admin_command = True
 
     def respond(self, message, message_arguments):
-        self._bot.trigger('response', message=message, message_arguments=message_arguments)
+        self._bot.trigger('response', message=self.cleanup_response(message), message_arguments=message_arguments)
 
 
 class IRCChannel(object):
