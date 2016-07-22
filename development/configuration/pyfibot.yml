@@ -1,0 +1,30 @@
+# Nickname for bot
+nick: 'pyfibot'
+# Set the command character for the bot
+command_char: '.'
+# Set realname for the bot
+realname: 'https://github.com/lepinkainen/pyfibot'
+
+admins:
+    - 'kipe!~kipe@172.19.0.1'
+
+# Networks to connect to
+networks:
+    # Alias for network
+    pyfibot1:
+        # Set network protocol
+        protocol: 'irc'
+        # Server to connect to
+        server: 'localhost'
+        # List of channels to join
+        channels:
+            - '#pyfibot'
+    pyfibot2:
+        protocol: 'irc'
+        server: 'localhost'
+        # Different port, nick and realname on this network
+        port: 6668
+        nick: 'pyfibot2'
+        realname: 'pyfibot'
+        channels:
+            - '#pyfibot'
