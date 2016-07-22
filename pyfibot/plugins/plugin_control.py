@@ -55,7 +55,7 @@ def enable_plugin(bot, sender, message, message_arguments):
     os.symlink(available_plugins[message], os.path.join(ENABLED_PLUGINS_DIR, '%s.py' % message))
 
     bot.load_plugins()
-    bot.respond('plugin "%s" enabled.' % message, message_arguments)
+    bot.respond('Plugin "%s" enabled.' % message, message_arguments)
 
 
 @admin_command('disable_plugin')
