@@ -1,13 +1,13 @@
 import time
 import random
 import bottom
-from .protocol import Protocol
+from pyfibot.bot import Bot
 
 
-class IRC(Protocol):
+class IRCbot(Bot):
     ''' Bot implementing IRC protocol. '''
     def __init__(self, core, name):
-        super(IRC, self).__init__(core, name)
+        super(IRCbot, self).__init__(core, name)
         network_configuration = self.network_configuration
 
         self.server = network_configuration['server']
@@ -19,7 +19,7 @@ class IRC(Protocol):
         ]
 
     def _get_builtin_commands(self):
-        commands = super(IRC, self)._get_builtin_commands()
+        commands = super(IRCbot, self)._get_builtin_commands()
         commands.update({
             'join': self.command_join,
         })
@@ -33,8 +33,8 @@ class IRC(Protocol):
         )
         return any([admin == identifier for admin in self.admins])
 
-    def connect(self, loop):
-        bot = bottom.Client(host=self.server, port=self.port, ssl=False, loop=loop)
+    def connect(self):
+        bot = bottom.Client(host=self.server, port=self.port, ssl=False, loop=self.core.loop)
 
         @bot.on('CLIENT_CONNECT')
         def on_connect(**kwargs):
@@ -48,7 +48,7 @@ class IRC(Protocol):
             sleep_time = random.randrange(5, 15, 1)
             print('%s disconnected. Reconnecting in %i seconds.' % (self.nickname, sleep_time))
             time.sleep(sleep_time)
-            self.connect(loop)
+            self.connect(self.core.loop)
 
         @bot.on('PING')
         def on_ping(message, **kwargs):

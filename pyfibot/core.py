@@ -3,7 +3,6 @@ import yaml
 import asyncio
 import requests
 from bs4 import BeautifulSoup
-from pyfibot.protocol.irc import IRC
 
 
 class Core(object):
@@ -49,7 +48,8 @@ class Core(object):
         for name, network_configuration in self.configuration.get('networks', {}).items():
             protocol = network_configuration.get('protocol', 'irc')
             if protocol == 'irc':
-                self.networks[name] = IRC(core=self, name=name)
+                from pyfibot.bot.ircbot import IRCbot
+                self.networks[name] = IRCbot(core=self, name=name)
 
     def connect_networks(self):
         ''' Creates main event loop and connects to networks. '''
@@ -60,6 +60,8 @@ class Core(object):
 
     def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):
         ''' Fetch url. '''
+        # TODO: clean-up, straight copy from original pyfibot
+        #       possibly add raise_for_status?
         s = requests.session()
         s.stream = True  # Don't fetch content unless asked
         s.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0'})
@@ -91,6 +93,8 @@ class Core(object):
         return r
 
     def get_bs(self, url, nocache=False, params=None, headers=None, cookies=None):
+        ''' Fetch BeautifulSoup from url. '''
+        # TODO: clean-up, straight copy from original pyfibot
         r = self.get_url(url, nocache=nocache, params=params, headers=headers, cookies=cookies)
         if not r:
             return None

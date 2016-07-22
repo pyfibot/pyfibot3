@@ -3,8 +3,8 @@ from inspect import getmembers, isfunction
 from pluginbase import PluginBase
 
 
-class Protocol(object):
-    ''' Base protocol object to define common functionalities for all bots. '''
+class Bot(object):
+    ''' Base bot object to define common functionalities for all bots. NOT TO BE USED DIRECTLY! '''
     def __init__(self, core, name):
         self._bot = None
 
@@ -41,7 +41,7 @@ class Protocol(object):
         ''' Get users admin status. '''
         return False
 
-    def connect(self, loop):
+    def connect(self):
         ''' Connect to server. '''
         raise NotImplementedError
 
@@ -96,6 +96,7 @@ class Protocol(object):
         self.plugin_base = PluginBase(package='pyfibot.plugins')
         self.plugin_source = self.plugin_base.make_plugin_source(searchpath=[os.path.abspath(os.path.join(here, '../plugins'))])
 
+        # TODO: replace with common "self.callbacks" dictionary?
         self.commands = self._get_builtin_commands()
         self.listeners = []
         self.teardowns = []
@@ -123,6 +124,9 @@ class Protocol(object):
                 if getattr(func, '_is_command', False) is True:
                     command = getattr(func, '_command', None)
 
+                    # TODO: possibly remove the possibility for a list?
+                    #       additional commands can be registered in init-function if necessary
+                    #       would make the API more consistent
                     if isinstance(command, list):
                         for c in command:
                             self.register_command(c, func)
