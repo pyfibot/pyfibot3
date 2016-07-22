@@ -26,11 +26,11 @@ def list_available_plugins(bot, sender, message, message_arguments):
     ''' List all available bot plugins. Only for admins. '''
 
     enabled_plugins = get_enabled_plugins().keys()
-    available_plugins = sorted([
+    available_plugins = [
         plugin
         for plugin in get_available_plugins().keys() if plugin not in enabled_plugins
-    ])
-    bot.respond('Available plugins: %s' % (', '.join(available_plugins)), message_arguments)
+    ]
+    bot.respond('Available plugins: %s' % (', '.join(sorted(available_plugins))), message_arguments)
 
 
 @admin_command('enabled_plugins')
@@ -38,7 +38,7 @@ def list_enabled_plugins(bot, sender, message, message_arguments):
     ''' List all enabled bot plugins. Only for admins. '''
 
     enabled_plugins = get_enabled_plugins().keys()
-    bot.respond('Enabled plugins: %s' % (', '.join(enabled_plugins)), message_arguments)
+    bot.respond('Enabled plugins: %s' % (', '.join(sorted(enabled_plugins))), message_arguments)
 
 
 @admin_command('enable_plugin')

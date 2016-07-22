@@ -144,7 +144,7 @@ class Protocol(object):
                 # Expose all commands to admins.
                 return self.respond(
                     'Available commands are: %s' % (
-                        ', '.join(self.commands.keys())
+                        ', '.join(sorted(self.commands.keys()))
                     ),
                     message_arguments=message_arguments
                 )
@@ -152,10 +152,10 @@ class Protocol(object):
             # Don't expose admin commands to regular users.
             return self.respond(
                 'Available commands are: %s' % (
-                    ', '.join([
+                    ', '.join(sorted([
                         command
                         for command, function in self.commands.items() if getattr(function, '_is_admin_command', False) is False
-                    ])
+                    ]))
                 ),
                 message_arguments=message_arguments
             )
@@ -164,7 +164,7 @@ class Protocol(object):
             return self.respond(
                 'Command "%s" unknown. Available commands are: %s' % (
                     message,
-                    ', '.join(self.commands.keys())
+                    ', '.join(sorted(self.commands.keys()))
                 ),
                 message_arguments=message_arguments
             )
