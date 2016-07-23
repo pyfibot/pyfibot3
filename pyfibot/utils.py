@@ -30,12 +30,14 @@ def parse_datetime(s):
     return dateutil.parser.parse(s)
 
 
-def get_duration_string(dt, return_delta=False):
+def get_duration_string(dt, maximum_elements=2, return_delta=False):
     '''
     Return duration string between two datetimes.
 
     Argument dt can either be a datetime, timedelta, integer, or float.
     If dt is integer or float, it's considered to be seconds.
+
+    Argument maximum_elements limits the maximum number of returned elements.
 
     If argument return_delta is True, the actual delta value is sent together with
     the string.
@@ -68,17 +70,17 @@ def get_duration_string(dt, return_delta=False):
     if int(seconds) > 0:
         parts.append('%ds' % seconds)
 
-    timedelta_string = ' '.join(parts)
+    timedelta_string = ' '.join(parts[0:maximum_elements])
 
     if not return_delta:
         return timedelta_string
     return timedelta_string, delta
 
 
-def get_relative_time_string(dt, lang='en'):
+def get_relative_time_string(dt, maximum_elements=2, lang='en'):
     '''
     Return relative time as string with the proper pre/suffix.
-    See get_duration_string documentation for dt.
+    See get_duration_string documentation for dt and maximum_elements.
     '''
     string_formats = {
         'en': {
@@ -91,7 +93,7 @@ def get_relative_time_string(dt, lang='en'):
         },
     }
 
-    timedelta_string, delta = get_duration_string(dt, return_delta=True)
+    timedelta_string, delta = get_duration_string(dt, maximum_elements=maximum_elements, return_delta=True)
     if not timedelta_string:
         return None
 
