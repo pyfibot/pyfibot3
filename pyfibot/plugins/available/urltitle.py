@@ -35,8 +35,15 @@ class URL(object):
 
     def get_title(self):
         for matcher, handler in handlers.items():
+            if handler._is_regex:
+                match = matcher.match(self.clean_url)
+                if not match:
+                    continue
+                return handler(self.bot, self, match)
+
             if fnmatch(self.clean_url, matcher):
                 return handler(self.bot, self)
+
         return None
 
 

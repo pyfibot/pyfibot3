@@ -1,14 +1,11 @@
+import re
 from pyfibot.decorators import urlhandler
 from pyfibot.utils import get_views_string
 
 
-@urlhandler('imdb.com/title/tt*')
-def imdb(bot, url):
-    imdb_id = [x for x in url.path.split('/') if x][-1]
-    if not imdb_id:
-        return
-
-    r = bot.get_url('http://www.omdbapi.com/', params={'i': imdb_id})
+@urlhandler(re.compile(r'imdb\.com/title/(?P<imdb_id>tt[0-9]+)/?'))
+def imdb(bot, url, match):
+    r = bot.get_url('http://www.omdbapi.com/', params={'i': match.group('imdb_id')})
     data = r.json()
 
     name = data['Title']

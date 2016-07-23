@@ -1,3 +1,6 @@
+import re
+
+
 def init(func):
     '''
     Decorator for plugin initialization. Runs when plugin is (re)loaded.
@@ -87,8 +90,18 @@ class urlhandler(object):
         self.url_matcher = url_matcher
 
     def __call__(self, func):
-        def handler_wrapper(bot, url):
+        def handler_string(bot, url):
             return func(bot, url)
+
+        def handler_regex(bot, url, match_groups):
+            return func(bot, url, match_groups)
+
+        if isinstance(self.url_matcher, re._pattern_type):
+            handler_wrapper = handler_regex
+            handler_wrapper._is_regex = True
+        else:
+            handler_wrapper = handler_string
+            handler_wrapper._is_regex = False
 
         handler_wrapper._is_urlhandler = True
         handler_wrapper._url_matcher = self.url_matcher
