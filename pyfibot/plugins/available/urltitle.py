@@ -34,23 +34,53 @@ class URL(object):
         return '<URL "%s">' % self.url
 
     def get_title(self):
+        title = None
+
         for matcher, handler in handlers.items():
             if handler._is_regex:
                 match = matcher.match(self.clean_url)
                 if not match:
                     continue
-                return handler(self.bot, self, match)
+                title = handler(self.bot, self, match)
+                break
 
             if fnmatch(self.clean_url, matcher):
-                return handler(self.bot, self)
+                title = handler(self.bot, self)
+                break
 
-        return None
+        if title is None:
+            # Implement get_video_info, get_fragment and get_opengraph_title here.
+            pass
+
+        if check_reduntant:
+            # Redundancy -check here.
+            pass
+
+        return title
+
+    def get_video_info(self):
+        # Get (possible) video information using Youtube-DL.
+        return
+
+    def get_fragment(self):
+        # According to Google's Making AJAX Applications Crawlable specification
+        return
+
+    def get_open_graph_title(self):
+        # Try and get title meant for social media first, it's usually fairly accurate
+        return
+
+    def is_redundant(self, title):
+        ''' Returns True if the url and title are similar enough. '''
+        return
 
 
 @init
 def init_urltitle(bot):
     global handlers
+    global check_reduntant
     handlers = discover_handlers()
+    check_reduntant = bot.core_configuration.get('urltitle', {}).get('check_reduntant', False)
 
 
 @listener
