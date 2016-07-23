@@ -25,12 +25,9 @@ class URL(object):
         self.bot = bot
         self.url = url
         self.components = urlsplit(url)
-        self.domain = str(self.components.netloc)
-        self.path = str(self.components.path)
-        self.query_parameters = {
-            str(key): list(value)
-            for key, value in parse_qs(self.components.query).items()
-        }
+        self.domain = self.components.netloc
+        self.path = self.components.path
+        self.query_parameters = parse_qs(self.components.query)
         self.clean_url = url.replace('%s://' % self.components.scheme, '').replace('www.', '')
 
     def __repr__(self):
