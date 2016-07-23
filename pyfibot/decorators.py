@@ -80,11 +80,33 @@ class admin_command(object):
 
 class urlhandler(object):
     '''
-    Decorator to build commands to the bot.
+    Decorator to build urlhandlers for urltitle -plugin.
+    url_matcher can either be a string following fnmatch -spec or a (compiled) regex-object.
 
-        @command('echo')
-        def echo(bot, sender, message, raw_message):
-            bot.respond(message, raw_message)
+    The handler itself receives the bot which found the url, an urltitle.URL -object,
+    and optionally, a regex match-object (only if the url_matcher is regex-object of course).
+
+    The urls passed to the matcher are stripped from protocol and 'www.' -prefix to make the
+    matchers more simple. So for example 'http://www.example.com' becomes 'example.com',
+    when looking for a match.
+
+    The handler can return:
+        - None (indicating no title was found and should fallback to default behaviour)
+        - False (to indicate that this url doesn't need a title)
+        - String (to send Title string to channel)
+
+    Examples:
+
+        @urlhandler('github.com/*')
+        def github(bot, url):
+            # Don't react to Github -urls, as the url itself is enough.
+            return False
+
+        @urlhandler(re.compile(r'imdb\.com/title/(?P<imdb_id>tt[0-9]+)/?'))
+        def imdb(bot, url, match):
+            imdb_id = match.group('imdb_id')
+            return
+
     '''
     def __init__(self, url_matcher):
         self.url_matcher = url_matcher
@@ -93,8 +115,8 @@ class urlhandler(object):
         def handler_string(bot, url):
             return func(bot, url)
 
-        def handler_regex(bot, url, match_groups):
-            return func(bot, url, match_groups)
+        def handler_regex(bot, url, match):
+            return func(bot, url, match)
 
         if isinstance(self.url_matcher, re._pattern_type):
             handler_wrapper = handler_regex
