@@ -1,3 +1,4 @@
+import math
 from datetime import datetime, timedelta, tzinfo
 import dateutil.tz
 import dateutil.parser
@@ -97,3 +98,17 @@ def get_relative_time_string(dt, lang='en'):
     if delta < 0:
         return string_formats.get(lang, string_formats['en']).get('ago') % timedelta_string
     return string_formats.get(lang, string_formats['en']).get('in') % timedelta_string
+
+
+def get_views_string(views):
+    views = int(views)
+
+    if views == 0:
+        return '0'
+
+    try:
+        millnames = ['', 'k', 'M', 'Billion', 'Trillion']
+        millidx = max(0, min(len(millnames) - 1, int(math.floor(math.log10(abs(views)) / 3.0))))
+        return '%.0f%s' % (views / 10 ** (3 * millidx), millnames[millidx])
+    except ValueError:
+        return '0'

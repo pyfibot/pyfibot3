@@ -73,3 +73,23 @@ class admin_command(object):
         command_wrapper._is_command = True
         command_wrapper._is_admin_command = True
         return command_wrapper
+
+
+class urlhandler(object):
+    '''
+    Decorator to build commands to the bot.
+
+        @command('echo')
+        def echo(bot, sender, message, raw_message):
+            bot.respond(message, raw_message)
+    '''
+    def __init__(self, url_matcher):
+        self.url_matcher = url_matcher
+
+    def __call__(self, func):
+        def handler_wrapper(bot, url):
+            return func(bot, url)
+
+        handler_wrapper._is_urlhandler = True
+        handler_wrapper._url_matcher = self.url_matcher
+        return handler_wrapper
