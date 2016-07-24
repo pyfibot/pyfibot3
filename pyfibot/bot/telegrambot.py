@@ -1,0 +1,63 @@
+import aiotg
+from pyfibot.bot import Bot
+
+
+class TelegramBot(Bot):
+    ''' Bot implementing IRC protocol. '''
+    def __init__(self, core, name):
+        super(TelegramBot, self).__init__(core, name)
+        network_configuration = self.network_configuration
+        self.api_token = network_configuration.get('api_token')
+        self.command_char = ''
+
+        if not self.api_token:
+            raise AttributeError('TelegramBot API key not found!')
+
+    def _get_builtin_commands(self):
+        commands = super(TelegramBot, self)._get_builtin_commands()
+        commands.update({
+            'get_user_id': self.command_get_user_id,
+        })
+        return commands
+
+    def is_admin(self, raw_message):
+        for admin in self.admins:
+            try:
+                if raw_message['chat'].sender.get('id', '-1') == int(admin):
+                    return True
+            except:
+                continue
+        return False
+
+    def connect(self):
+        bot = aiotg.Bot(api_token=self.api_token)
+
+        @bot.command(r'(.+)')
+        def handle_message(chat, match):
+            sender = chat.sender.get('id') or chat.sender.get('first_name', '')
+            message = match.group(1)
+            raw_message = {
+                'chat': chat,
+                'match': match
+            }
+
+            self.handle_message(sender, message, raw_message=raw_message)
+
+        self._bot = bot
+        return self.core.loop.create_task(self._bot.loop())
+
+    def respond(self, message, raw_message):
+        chat = raw_message.get('chat')
+        if not chat:
+            return
+        self.core.loop.create_task(
+            self._bot.send_message(
+                chat.id,
+                message,
+                **raw_message.get('telegram_options', {})
+            )
+        )
+
+    def command_get_user_id(self, bot, sender, message, raw_message):
+        ''' Get user ID for Telegram user. '''
+        bot.respond(sender, raw_message)

@@ -52,6 +52,9 @@ class Core(object):
             if protocol == 'irc':
                 from pyfibot.bot.ircbot import IRCbot
                 self.networks[name] = IRCbot(core=self, name=name)
+            if protocol == 'telegram':
+                from pyfibot.bot.telegrambot import TelegramBot
+                self.networks[name] = TelegramBot(core=self, name=name)
 
     def connect_networks(self):
         ''' Creates main event loop and connects to networks. '''
