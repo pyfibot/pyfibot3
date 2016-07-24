@@ -152,6 +152,10 @@ class URL(object):
         if entries:
             additional_info.append('%i entries' % len(entries))
 
+        tags = info.get('tags')
+        if tags:
+            additional_info.append(', '.join(tags[:4]))
+
         title = ' '.join(filter(None, [x.strip() for x in title]))
         additional_info = ' - '.join(filter(None, [x.strip() for x in additional_info]))
 
