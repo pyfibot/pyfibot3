@@ -86,7 +86,7 @@ class URL(object):
             # log.debug("No BS available, returning")
             return
 
-        bs = self.get_fragment(bs)
+        bs = self.get_fragment(bot, bs)
         title = self.get_generic_title(bs)
 
         if check_reduntant and self.check_reduntant(title):
