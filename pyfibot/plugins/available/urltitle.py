@@ -187,7 +187,7 @@ def get_urls(bot, sender, message, raw_message):
             return
 
         if isinstance(title, str):
-            return bot.respond(title, raw_message)
+            return bot.respond('Title: %s' % title, raw_message)
 
     return bot.respond('Detected %i urls.' % len(urls), raw_message)
 
