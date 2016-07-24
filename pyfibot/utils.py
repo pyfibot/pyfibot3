@@ -55,12 +55,19 @@ def get_duration_string(dt, maximum_elements=2, return_delta=False):
 
     secs = abs(delta)
 
+    years = secs // 31536000
+    secs -= years * 31536000
+
     days = secs // 86400
     secs -= days * 86400
 
     hours, minutes, seconds = secs // 3600, secs // 60 % 60, secs % 60
 
+    # TODO: possibly add rounding based on maximum_elements?
+
     parts = []
+    if years:
+        parts.append('%dy' % years)
     if days > 0:
         parts.append('%dd' % days)
     if hours > 0:
