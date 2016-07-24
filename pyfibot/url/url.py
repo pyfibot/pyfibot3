@@ -48,7 +48,7 @@ class URL(object):
             try:
                 plugin = cls.plugin_source.load_plugin(plugin_name)
             except:
-                print('Failed to load plugin "%s".' % plugin_name)
+                print('Failed to load url handler "%s".' % plugin_name)
                 traceback.print_exc()
                 continue
 
@@ -58,7 +58,6 @@ class URL(object):
                     continue
 
                 if getattr(func, '_is_urlhandler', False) is True:
-                    print(func._url_matcher)
                     cls.url_handlers[func._url_matcher] = func
 
         return cls.url_handlers
