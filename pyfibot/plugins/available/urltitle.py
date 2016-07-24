@@ -5,7 +5,12 @@ from fnmatch import fnmatch
 from inspect import getmembers, isfunction
 from urllib.parse import urlsplit, parse_qs
 from pluginbase import PluginBase
+from datetime import datetime
+from dateutil.tz import tzutc
+import youtube_dl
 from pyfibot.decorators import init, listener
+from pyfibot.utils import get_duration_string, get_views_string, get_relative_time_string, parse_datetime
+
 
 # http://stackoverflow.com/a/30408189
 url_regex = re.compile(
@@ -48,9 +53,10 @@ class URL(object):
                 title = handler(self.bot, self)
                 break
 
-        if title is None:
-            # Implement get_video_info, get_fragment and get_opengraph_title here.
-            pass
+        for fetcher in [self.get_video_info]:
+            title = fetcher()
+            if title is not None:
+                break
 
         if check_reduntant:
             # Redundancy -check here.
@@ -59,8 +65,55 @@ class URL(object):
         return title
 
     def get_video_info(self):
-        # Get (possible) video information using Youtube-DL.
-        return
+        ''' Gets (possible) video information using YoutubeDL. '''
+        with youtube_dl.YoutubeDL(params={'extract_flat': True}) as ydl:
+            try:
+                info = ydl.extract_info(self.url, download=False)
+            except youtube_dl.utils.DownloadError:
+                return None
+
+        title = [
+            '"%s"' % info.get('title', '')
+        ]
+        additional_info = []
+
+        uploader = info.get('uploader')
+        if uploader:
+            title.append('by %s' % uploader)
+
+        duration = info.get('duration')
+        if duration:
+            additional_info.append(get_duration_string(duration))
+
+        view_count = info.get('view_count')
+        if view_count:
+            additional_info.append('%s views' % get_views_string(view_count))
+
+        timestamp = info.get('timestamp')
+        if timestamp:
+            additional_info.append(
+                'uploaded %s' % get_relative_time_string(
+                    datetime.fromtimestamp(timestamp, tzutc())
+                )
+            )
+        else:
+            date = info.get('upload_date') or info.get('release_date')
+            if date:
+                additional_info.append('uploaded %s' % get_relative_time_string(parse_datetime(date)))
+
+        age_limit = info.get('age_limit')
+        if age_limit:
+            additional_info.append('%i+' % age_limit)
+
+        title = ' '.join(filter(None, title))
+        additional_info = ' - '.join(filter(None, additional_info))
+
+        if not title:
+            return None
+
+        if additional_info:
+            return '%s [%s]' % (title, additional_info)
+        return title
 
     def get_fragment(self):
         # According to Google's Making AJAX Applications Crawlable specification
