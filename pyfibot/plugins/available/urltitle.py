@@ -3,7 +3,7 @@ import os
 import traceback
 from fnmatch import fnmatch
 from inspect import getmembers, isfunction
-from urllib.parse import urlsplit, parse_qs
+from urllib.parse import urlsplit, urlunsplit, parse_qs
 from pluginbase import PluginBase
 from datetime import datetime
 from dateutil.tz import tzutc
@@ -53,10 +53,19 @@ class URL(object):
                 title = handler(self.bot, self)
                 break
 
-        for fetcher in [self.get_video_info]:
-            title = fetcher()
-            if title is not None:
-                break
+        title = self.get_video_info()
+        if title:
+            return title
+
+        # Fallback to generic handler
+        bs = self.bot.get_bs(self.url)
+        if not bs:
+            # If fetching BS failed, return False
+            # log.debug("No BS available, returning")
+            return
+
+        bs = self.get_fragment(bs)
+        title = self.get_generic_title(bs)
 
         if check_reduntant:
             # Redundancy -check here.
@@ -115,13 +124,43 @@ class URL(object):
             return '%s [%s]' % (title, additional_info)
         return title
 
-    def get_fragment(self):
-        # According to Google's Making AJAX Applications Crawlable specification
-        return
+    # https://developers.google.com/webmasters/ajax-crawling/docs/specification
+    def __escaped_fragment(self, url, meta=False):
+        url = urlsplit(url)
+        if not url.fragment or not url.fragment.startswith('!'):
+            if not meta:
+                return url.geturl()
 
-    def get_open_graph_title(self):
-        # Try and get title meant for social media first, it's usually fairly accurate
-        return
+        query = url.query
+        if query:
+            query += '&'
+        query += '_escaped_fragment_='
+        if url.fragment:
+            query += url.fragment[1:]
+
+        return urlunsplit((url.scheme, url.netloc, url.path, query, ''))
+
+    def get_fragment(self, bs):
+        # According to Google's Making AJAX Applications Crawlable specification
+        fragment = bs.find('meta', {'name': 'fragment'})
+        if fragment and fragment.get('content') == '!':
+            # log.debug("Fragment meta tag on page, getting non-ajax version")
+            url = self.__escaped_fragment(self.url, meta=True)
+            bs = self.bot.get_url(url)
+        return bs
+
+    def get_generic_title(self, bs):
+        title = bs.find('meta', {'property': 'og:title'})
+        if not title:
+            title = bs.find('title')
+            # no title attribute
+            if not title:
+                # log.debug("No title found, returning")
+                return
+            title = title.text
+        else:
+            title = title['content']
+        return title
 
     def is_redundant(self, title):
         ''' Returns True if the url and title are similar enough. '''
