@@ -102,48 +102,65 @@ class URL(object):
             except youtube_dl.utils.DownloadError:
                 return None
 
-        title = [
-            '"%s"' % info.get('title', '')
-        ]
+        video_title = info.get('title')
+        if not video_title:
+            return
+
+        title = ['"%s"' % video_title]
         additional_info = []
 
         uploader = info.get('uploader')
         if uploader:
             title.append('by %s' % uploader)
 
-        duration = info.get('duration')
-        if duration:
-            additional_info.append(get_duration_string(duration))
+        is_live = info.get('is_live', False)
+        if is_live:
+            additional_info.append('LIVE')
+
+        if not is_live:
+            duration = info.get('duration')
+            if duration:
+                additional_info.append(get_duration_string(duration))
+
+        average_rating = info.get('average_rating')
+        if average_rating:
+            additional_info.append('%.0f/5' % average_rating)
 
         view_count = info.get('view_count')
         if view_count:
             additional_info.append('%s views' % get_views_string(view_count))
 
-        timestamp = info.get('timestamp')
-        if timestamp:
-            additional_info.append(
-                'uploaded %s' % get_relative_time_string(
-                    datetime.fromtimestamp(timestamp, tzutc())
+        if not is_live:
+            timestamp = info.get('timestamp')
+            if timestamp:
+                additional_info.append(
+                    'uploaded %s' % get_relative_time_string(
+                        datetime.fromtimestamp(timestamp, tzutc())
+                    )
                 )
-            )
-        else:
-            date = info.get('upload_date') or info.get('release_date')
-            if date:
-                additional_info.append('uploaded %s' % get_relative_time_string(parse_datetime(date)))
+            else:
+                date = info.get('upload_date') or info.get('release_date')
+                if date:
+                    additional_info.append('uploaded %s' % get_relative_time_string(parse_datetime(date)))
 
         age_limit = info.get('age_limit')
         if age_limit:
             additional_info.append('%i+' % age_limit)
 
-        title = ' '.join(filter(None, title))
-        additional_info = ' - '.join(filter(None, additional_info))
+        # If this is a playlist, there's certain number of entries
+        entries = info.get('entries')
+        if entries:
+            additional_info.append('%i entries' % len(entries))
+
+        title = ' '.join(filter(None, [x.strip() for x in title]))
+        additional_info = ' - '.join(filter(None, [x.strip() for x in additional_info]))
 
         if not title:
             return None
 
         if additional_info:
-            return '%s [%s]' % (title, additional_info)
-        return title
+            return ('%s [%s]' % (title, additional_info)).strip()
+        return title.strip()
 
     # https://developers.google.com/webmasters/ajax-crawling/docs/specification
     def __escaped_fragment(self, url, meta=False):
