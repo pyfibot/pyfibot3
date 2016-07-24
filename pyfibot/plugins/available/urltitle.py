@@ -46,12 +46,10 @@ class URL(object):
                 match = matcher.match(self.clean_url)
                 if not match:
                     continue
-                title = handler(self.bot, self, match)
-                break
+                return handler(self.bot, self, match)
 
             if fnmatch(self.clean_url, matcher):
-                title = handler(self.bot, self)
-                break
+                return handler(self.bot, self)
 
         title = self.get_video_info()
         if title:
