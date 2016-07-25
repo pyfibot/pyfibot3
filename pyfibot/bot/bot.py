@@ -1,7 +1,7 @@
 import os
 import traceback
-from inspect import getmembers, isfunction
 from pluginbase import PluginBase
+from pyfibot.bot.plugin import Plugin
 
 
 class Bot(object):
@@ -12,6 +12,7 @@ class Bot(object):
         self.core = core
         self.name = name
         self.callbacks = {}
+        self.plugins = {}
 
         self.load_configuration()
 
@@ -53,47 +54,27 @@ class Bot(object):
         for plugin_name in self.plugin_source.list_plugins():
             try:
                 plugin = self.plugin_source.load_plugin(plugin_name)
+                self.register_plugin(Plugin(self, plugin_name, plugin))
             except:
                 print('Failed to load plugin "%s".' % plugin_name)
                 traceback.print_exc()
                 continue
 
-            for member in getmembers(plugin):
-                func = member[1]
-                if not isfunction(func):
-                    continue
+    def register_plugin(self, plugin):
+        if plugin.init:
+            plugin.init(self)
+        for command, func in plugin.commands.items():
+            self.register_command(command, func)
+        for listener in plugin.listeners:
+            self.register_listener(listener)
 
-                if getattr(func, '_is_init', False) is True:
-                    func(self)
-                    continue
-
-                if getattr(func, '_is_teardown', False) is True:
-                    self.register_teardown(func)
-                    continue
-
-                if getattr(func, '_is_command', False) is True:
-                    command = getattr(func, '_command', None)
-
-                    # TODO: possibly remove the possibility for a list?
-                    #       additional commands can be registered in init-function if necessary
-                    #       would make the API more consistent
-                    if isinstance(command, list):
-                        for c in command:
-                            self.register_command(c, func)
-
-                    if isinstance(command, str):
-                        self.register_command(command, func)
-
-                    continue
-
-                if getattr(func, '_is_listener', False) is True:
-                    self.register_listener(func)
-
-            print('Loaded plugin "%s".' % plugin_name)
+        self.plugins[plugin.name] = plugin
+        print('Loaded plugin "%s".' % plugin.name)
 
     def init_callbacks(self):
-        for teardown in self.teardowns:
-            teardown(self._bot)
+        for plugin_name, plugin in self.plugins.items():
+            if plugin.teardown:
+                plugin.teardown(self)
 
         self.callbacks = {
             'commands': self._get_builtin_commands(),
