@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals, print_function, division
 from datetime import datetime, timedelta
 from math import isnan
 from pyfibot.decorators import command, init
