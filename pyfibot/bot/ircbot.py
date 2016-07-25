@@ -8,14 +8,14 @@ class IRCbot(Bot):
     ''' Bot implementing IRC protocol. '''
     def __init__(self, core, name):
         super(IRCbot, self).__init__(core, name)
-        network_configuration = self.network_configuration
+        configuration = self.configuration
 
-        self.server = network_configuration['server']
-        self.port = int(network_configuration.get('port', '6667'))
-        self.realname = network_configuration.get('realname') or self.core.realname
+        self.server = configuration['server']
+        self.port = int(configuration.get('port', '6667'))
+        self.realname = configuration.get('realname') or self.core.realname
         self.channels = [
             IRCChannel(self, channel) if not isinstance(channel, list) else IRCChannel(self, *channel)
-            for channel in network_configuration.get('channels', [])
+            for channel in configuration.get('channels', [])
         ]
 
     def _get_builtin_commands(self):

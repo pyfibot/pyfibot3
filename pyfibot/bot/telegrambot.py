@@ -6,9 +6,7 @@ class TelegramBot(Bot):
     ''' Bot implementing IRC protocol. '''
     def __init__(self, core, name):
         super(TelegramBot, self).__init__(core, name)
-        network_configuration = self.network_configuration
-        self.api_token = network_configuration.get('api_token')
-        self.command_char = ''
+        self.api_token = self.configuration.get('api_token')
 
         if not self.api_token:
             raise AttributeError('TelegramBot API key not found!')

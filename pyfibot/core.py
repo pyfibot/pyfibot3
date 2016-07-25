@@ -7,10 +7,10 @@ from bs4 import BeautifulSoup
 
 
 class Core(object):
-    ''' Bot core, holding the configuration and connecting to networks. '''
+    ''' Bot core, holding the configuration and connecting to bots. '''
 
     def __init__(self, configuration_file='~/.config/pyfibot/pyfibot.yml', log_level='info'):
-        self.networks = {}
+        self.bots = {}
         self.configuration = {}
         self.admins = []
         self.command_char = '.'
@@ -19,11 +19,11 @@ class Core(object):
         self.load_configuration()
         self.nickname = self.configuration.get('nick', 'pyfibot')
         self.realname = self.configuration.get('realname', 'https://github.com/lepinkainen/pyfibot')
-        self.load_networks()
+        self.load_bots()
 
     def run(self):
         ''' Run bot. '''
-        loop = self.connect_networks()
+        loop = self.connect_bots()
         loop.run_forever()
 
     def load_configuration(self):
@@ -42,25 +42,25 @@ class Core(object):
 
         self.admins = self.configuration.get('admins', [])
         self.command_char = self.configuration.get('command_char', '.')
-        for name, network in self.networks.items():
-            network.load_configuration()
+        for name, bot in self.bots.items():
+            bot.load_configuration()
 
-    def load_networks(self):
-        ''' Loads networks from configuration and initializes them. '''
-        for name, network_configuration in self.configuration.get('networks', {}).items():
-            protocol = network_configuration.get('protocol', 'irc')
+    def load_bots(self):
+        ''' Loads bots from configuration and initializes them. '''
+        for name, bot_configuration in self.configuration.get('bots', {}).items():
+            protocol = bot_configuration.get('protocol', 'irc')
             if protocol == 'irc':
                 from pyfibot.bot.ircbot import IRCbot
-                self.networks[name] = IRCbot(core=self, name=name)
+                self.bots[name] = IRCbot(core=self, name=name)
             if protocol == 'telegram':
                 from pyfibot.bot.telegrambot import TelegramBot
-                self.networks[name] = TelegramBot(core=self, name=name)
+                self.bots[name] = TelegramBot(core=self, name=name)
 
-    def connect_networks(self):
-        ''' Creates main event loop and connects to networks. '''
+    def connect_bots(self):
+        ''' Creates main event loop and connects to bots. '''
         self.loop = asyncio.get_event_loop()
-        for network in self.networks.values():
-            network.connect()
+        for bot in self.bots.values():
+            bot.connect()
         return self.loop
 
     def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):

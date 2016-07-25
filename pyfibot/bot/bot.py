@@ -21,19 +21,75 @@ class Bot(object):
         return self.core.configuration
 
     @property
-    def network_configuration(self):
-        ''' Get network configuration. '''
-        return self.core_configuration.get('networks', {}).get(self.name, {})
+    def configuration(self):
+        ''' Get bot configuration. '''
+        return self.core_configuration.get('bots', {}).get(self.name, {})
+
+    @property
+    def protocol(self):
+        ''' Get the protocol of the bot. Useful for implement some plugins only in certain protocols etc. '''
+        return self.bot_configuration.get('protocol')
 
     def load_configuration(self):
-        network_configuration = self.network_configuration
+        configuration = self.configuration
 
-        print('Reloading network configuration for "%s".' % (self.name))
-        self.nickname = network_configuration.get('nick') or self.core.nickname
-        self.command_char = network_configuration.get('command_char') or self.core.command_char
+        print('Reloading bot configuration for "%s".' % (self.name))
+        self.nickname = configuration.get('nick') or self.core.nickname
+        self.command_char = self.core.command_char if configuration.get('command_char') is None \
+            else configuration.get('command_char')
 
-        self.admins = self.core.admins + network_configuration.get('admins', [])
+        self.admins = self.core.admins + configuration.get('admins', [])
         self.load_plugins()
+
+    def load_plugins(self):
+        ''' (Re)loads all plugins, calling teardowns before unloading them. '''
+        here = os.path.abspath(os.path.dirname(__file__))
+        self.plugin_base = PluginBase(package='pyfibot.plugins')
+        self.plugin_source = self.plugin_base.make_plugin_source(searchpath=[os.path.abspath(os.path.join(here, '../plugins'))])
+
+        # Re-initialize all callback functions.
+        self.init_callbacks()
+
+        for plugin_name in self.plugin_source.list_plugins():
+            try:
+                plugin = self.plugin_source.load_plugin(plugin_name)
+            except:
+                print('Failed to load plugin "%s".' % plugin_name)
+                traceback.print_exc()
+                continue
+
+            for member in getmembers(plugin):
+                func = member[1]
+                if not isfunction(func):
+                    continue
+
+                if getattr(func, '_is_init', False) is True:
+                    func(self)
+                    continue
+
+                if getattr(func, '_is_teardown', False) is True:
+                    self.register_teardown(func)
+                    continue
+
+                if getattr(func, '_is_command', False) is True:
+                    command = getattr(func, '_command', None)
+
+                    # TODO: possibly remove the possibility for a list?
+                    #       additional commands can be registered in init-function if necessary
+                    #       would make the API more consistent
+                    if isinstance(command, list):
+                        for c in command:
+                            self.register_command(c, func)
+
+                    if isinstance(command, str):
+                        self.register_command(command, func)
+
+                    continue
+
+                if getattr(func, '_is_listener', False) is True:
+                    self.register_listener(func)
+
+            print('Loaded plugin "%s".' % plugin_name)
 
     def init_callbacks(self):
         for teardown in self.teardowns:
@@ -106,56 +162,6 @@ class Bot(object):
         return {
             'help': self.command_help,
         }
-
-    def load_plugins(self):
-        ''' (Re)loads all plugins, calling teardowns before unloading them. '''
-        here = os.path.abspath(os.path.dirname(__file__))
-        self.plugin_base = PluginBase(package='pyfibot.plugins')
-        self.plugin_source = self.plugin_base.make_plugin_source(searchpath=[os.path.abspath(os.path.join(here, '../plugins'))])
-
-        # Re-initialize all callback functions.
-        self.init_callbacks()
-
-        for plugin_name in self.plugin_source.list_plugins():
-            try:
-                plugin = self.plugin_source.load_plugin(plugin_name)
-            except:
-                print('Failed to load plugin "%s".' % plugin_name)
-                traceback.print_exc()
-                continue
-
-            for member in getmembers(plugin):
-                func = member[1]
-                if not isfunction(func):
-                    continue
-
-                if getattr(func, '_is_init', False) is True:
-                    func(self)
-                    continue
-
-                if getattr(func, '_is_teardown', False) is True:
-                    self.register_teardown(func)
-                    continue
-
-                if getattr(func, '_is_command', False) is True:
-                    command = getattr(func, '_command', None)
-
-                    # TODO: possibly remove the possibility for a list?
-                    #       additional commands can be registered in init-function if necessary
-                    #       would make the API more consistent
-                    if isinstance(command, list):
-                        for c in command:
-                            self.register_command(c, func)
-
-                    if isinstance(command, str):
-                        self.register_command(command, func)
-
-                    continue
-
-                if getattr(func, '_is_listener', False) is True:
-                    self.register_listener(func)
-
-            print('Loaded plugin "%s".' % plugin_name)
 
     def command_help(self, bot, sender, message, raw_message):
         ''' Get help for bot plugins '''

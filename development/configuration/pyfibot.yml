@@ -8,11 +8,11 @@ realname: 'https://github.com/lepinkainen/pyfibot'
 admins:
     - 'kipe!~kipe@172.19.0.1'
 
-# Networks to connect to
-networks:
-    # Alias for network
+# Bot definitions
+bots:
+    # Alias for bot
     pyfibot1:
-        # Set network protocol
+        # Set bot protocol
         protocol: 'irc'
         # Server to connect to
         server: 'localhost'
@@ -22,9 +22,12 @@ networks:
     pyfibot2:
         protocol: 'irc'
         server: 'localhost'
-        # Different port, nick and realname on this network
+        # Different port, nick and realname on this bot
         port: 6668
         nick: 'pyfibot2'
         realname: 'pyfibot'
         channels:
             - '#pyfibot'
+
+plugin_fmi:
+    default_place: Lappeenranta
