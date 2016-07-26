@@ -12,11 +12,14 @@ class PeriodicTask(object):
         self._set()
 
     def _set(self):
-        self._handler = self._loop.call_later(self._interval, self._run)
+        self._handler = self._loop.call_later(
+            self._interval,
+            self._bot.core.loop.run_in_executor, None, self._run
+        )
 
     def _run(self):
         self._func(self._bot)
-        self._handler = self._loop.call_later(self._interval, self._run)
+        self._set()
 
     def stop(self):
         self._handler.cancel()

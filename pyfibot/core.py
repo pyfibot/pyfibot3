@@ -26,6 +26,7 @@ class Core(object):
         ''' Run bot. '''
         self.connect_bots()
         self.loop.run_forever()
+        self.loop.close()
 
     def load_configuration(self):
         ''' (Re)loads configuration from file. '''
