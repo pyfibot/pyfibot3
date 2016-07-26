@@ -1,4 +1,4 @@
-from pyfibot.decorators import urlhandler
+from pyfibot.url import urlhandler
 
 
 @urlhandler('github.com/*')

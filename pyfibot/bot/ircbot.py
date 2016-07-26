@@ -130,7 +130,7 @@ class IRCbot(Bot):
                 return channel
         return None
 
-    def command_join(self, bot, sender, message, raw_message):
+    def command_join(self, sender, message, raw_message):
         ''' Command to join IRC channels. '''
         if not self.is_admin(raw_message):
             return

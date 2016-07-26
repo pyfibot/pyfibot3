@@ -23,7 +23,6 @@ class URL(object):
     here = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     plugin_base = PluginBase(package='pyfibot.url.handlers')
     plugin_source = plugin_base.make_plugin_source(searchpath=[os.path.join(here, 'handlers')])
-    handlers = {}
 
     def __init__(self, url):
         self.url = url
@@ -32,6 +31,7 @@ class URL(object):
         self.path = self.components.path
         self.query_parameters = parse_qs(self.components.query)
         self.clean_url = url.replace('%s://' % self.components.scheme, '').replace('www.', '')
+        self.handlers = self.discover_handlers()
 
     def __repr__(self):
         return '<URL "%s">' % self.url
@@ -40,13 +40,12 @@ class URL(object):
     def get_urls(cls, string):
         return [URL(url) for url in set(re.findall(cls.url_regex, string))]
 
-    @classmethod
-    def discover_handlers(cls):
+    def discover_handlers(self):
         print('Discovering URL handlers')
-        cls.url_handlers = {}
-        for plugin_name in cls.plugin_source.list_plugins():
+        self.url_handlers = {}
+        for plugin_name in self.plugin_source.list_plugins():
             try:
-                plugin = cls.plugin_source.load_plugin(plugin_name)
+                plugin = self.plugin_source.load_plugin(plugin_name)
             except:
                 print('Failed to load url handler "%s".' % plugin_name)
                 traceback.print_exc()
@@ -58,9 +57,9 @@ class URL(object):
                     continue
 
                 if getattr(func, '_is_urlhandler', False) is True:
-                    cls.url_handlers[func._url_matcher] = func
+                    self.url_handlers[func._url_matcher] = func
 
-        return cls.url_handlers
+        return self.url_handlers
 
     def get_title(self, bot, check_reduntant=False):
         title = None
@@ -207,3 +206,55 @@ class URL(object):
     def is_redundant(self, title):
         ''' Returns True if the url and title are similar enough. '''
         return
+
+
+class urlhandler(object):
+    '''
+    Decorator to build urlhandlers for urltitle -plugin.
+    url_matcher can either be a string following fnmatch -spec or a (compiled) regex-object.
+
+    The handler itself receives the bot which found the url, an urltitle.URL -object,
+    and optionally, a regex match-object (only if the url_matcher is regex-object of course).
+
+    The urls passed to the matcher are stripped from protocol and 'www.' -prefix to make the
+    matchers more simple. So for example 'http://www.example.com' becomes 'example.com',
+    when looking for a match.
+
+    The handler can return:
+        - None (indicating no title was found and should fallback to default behaviour)
+        - False (to indicate that this url doesn't need a title)
+        - String (to send Title string to channel)
+
+    Examples:
+
+        @urlhandler('github.com/*')
+        def github(bot, url):
+            # Don't react to Github -urls, as the url itself is enough.
+            return False
+
+        @urlhandler(re.compile(r'imdb\.com/title/(?P<imdb_id>tt[0-9]+)/?'))
+        def imdb(bot, url, match):
+            imdb_id = match.group('imdb_id')
+            return
+
+    '''
+    def __init__(self, url_matcher):
+        self.url_matcher = url_matcher
+
+    def __call__(self, func):
+        def handler_string(bot, url):
+            return func(bot, url)
+
+        def handler_regex(bot, url, match):
+            return func(bot, url, match)
+
+        if isinstance(self.url_matcher, re._pattern_type):
+            handler_wrapper = handler_regex
+            handler_wrapper._is_regex = True
+        else:
+            handler_wrapper = handler_string
+            handler_wrapper._is_regex = False
+
+        handler_wrapper._is_urlhandler = True
+        handler_wrapper._url_matcher = self.url_matcher
+        return handler_wrapper

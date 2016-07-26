@@ -1,1 +1,1 @@
-from pyfibot.url.url import URL
+from pyfibot.url.url import URL, urlhandler

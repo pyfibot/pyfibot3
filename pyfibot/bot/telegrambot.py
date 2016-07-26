@@ -56,6 +56,6 @@ class TelegramBot(Bot):
             )
         )
 
-    def command_get_user_id(self, bot, sender, message, raw_message):
+    def command_get_user_id(self, sender, message, raw_message):
         ''' Get user ID for Telegram user. '''
-        bot.respond(sender, raw_message)
+        self.bot.respond(sender, raw_message)

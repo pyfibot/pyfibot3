@@ -2,47 +2,45 @@
 Get shipment tracking info from Posti
 """
 
-from pyfibot.decorators import init, command
+from pyfibot.plugin import Plugin
 from pyfibot.utils import parse_datetime, get_relative_time_string
 from urllib.parse import quote_plus
 
 
-@init
-def init(bot):
-    global lang
-    lang = bot.core_configuration.get('plugin_posti', {}).get('language', 'en')
+class Posti(Plugin):
+    def init(self):
+        self.lang = self.bot.core_configuration.get('plugin_posti', {}).get('language', 'en')
 
+    @Plugin.command('posti')
+    def posti(self, sender, message, raw_message):
+        ''' Get latest tracking event for a shipment from Posti. Usage: .posti JJFI00000000000000 '''
 
-@command('posti')
-def posti(bot, sender, message, raw_message):
-    ''' Get latest tracking event for a shipment from Posti. Usage: .posti JJFI00000000000000 '''
+        if not message:
+            return self.bot.respond('Tracking ID is required.', raw_message)
 
-    if not message:
-        return bot.respond('Tracking ID is required.', raw_message)
+        url = 'http://www.posti.fi/henkiloasiakkaat/seuranta/api/shipments/%s' % quote_plus(message)
 
-    url = 'http://www.posti.fi/henkiloasiakkaat/seuranta/api/shipments/%s' % quote_plus(message)
+        try:
+            r = self.bot.get_url(url)
+            r.raise_for_status()
+            data = r.json()
+            shipment = data['shipments'][0]
+        except Exception:
+            return self.bot.respond('Error while getting tracking data. Check the tracking ID or try again later.', raw_message)
 
-    try:
-        r = bot.get_url(url)
-        r.raise_for_status()
-        data = r.json()
-        shipment = data['shipments'][0]
-    except Exception:
-        return bot.respond('Error while getting tracking data. Check the tracking ID or try again later.', raw_message)
+        phase = shipment['phase']
+        eta_timestamp = shipment.get('estimatedDeliveryTime')
+        latest_event = shipment['events'][0]
 
-    phase = shipment['phase']
-    eta_timestamp = shipment.get('estimatedDeliveryTime')
-    latest_event = shipment['events'][0]
+        event_time = get_relative_time_string(parse_datetime(latest_event['timestamp']), lang=self.lang)
+        description = latest_event['description'][self.lang]
+        location = '%s %s' % (latest_event['locationCode'], latest_event['locationName'])
 
-    event_time = get_relative_time_string(parse_datetime(latest_event['timestamp']), lang=lang)
-    description = latest_event['description'][lang]
-    location = '%s %s' % (latest_event['locationCode'], latest_event['locationName'])
+        msg = ' - '.join([event_time, description, location])
 
-    msg = ' - '.join([event_time, description, location])
+        if phase != 'DELIVERED' and eta_timestamp:
+            eta_dt = parse_datetime(eta_timestamp)
+            eta_txt = eta_dt.strftime('%d.%m.%Y %H:%M')
+            msg = 'ETA %s - %s' % (eta_txt, msg)
 
-    if phase != 'DELIVERED' and eta_timestamp:
-        eta_dt = parse_datetime(eta_timestamp)
-        eta_txt = eta_dt.strftime('%d.%m.%Y %H:%M')
-        msg = 'ETA %s - %s' % (eta_txt, msg)
-
-    bot.respond(msg, raw_message)
+        self.bot.respond(msg, raw_message)

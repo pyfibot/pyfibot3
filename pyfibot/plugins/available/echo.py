@@ -1,7 +1,10 @@
-from pyfibot.decorators import command
+from pyfibot.plugin import Plugin
 
 
-@command(['echo', 'toista'])
-def echo(bot, sender, message, raw_message):
-    ''' Echoes back the user message. '''
-    bot.respond(message, raw_message)
+class Echo(Plugin):
+    def init(self):
+        print('Echo loaded')
+
+    @Plugin.command('echo')
+    def echo(self, sender, message, raw_message):
+        self.bot.respond(message, raw_message)

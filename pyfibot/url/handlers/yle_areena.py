@@ -1,6 +1,6 @@
 import re
+from pyfibot.url import urlhandler
 from datetime import timedelta
-from pyfibot.decorators import urlhandler
 from pyfibot.utils import get_utc_datetime, parse_datetime, get_duration_string, get_relative_time_string
 
 

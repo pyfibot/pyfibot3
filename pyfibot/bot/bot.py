@@ -1,7 +1,4 @@
-import os
-import traceback
-from pluginbase import PluginBase
-from pyfibot.bot.plugin import Plugin
+from pyfibot.plugin import Plugin
 
 
 class Bot(object):
@@ -44,42 +41,22 @@ class Bot(object):
 
     def load_plugins(self):
         ''' (Re)loads all plugins, calling teardowns before unloading them. '''
-        here = os.path.abspath(os.path.dirname(__file__))
-        self.plugin_base = PluginBase(package='pyfibot.plugins')
-        self.plugin_source = self.plugin_base.make_plugin_source(searchpath=[os.path.abspath(os.path.join(here, '../plugins'))])
 
-        # Re-initialize all callback functions.
         self.init_callbacks()
-
-        for plugin_name in self.plugin_source.list_plugins():
-            try:
-                plugin = self.plugin_source.load_plugin(plugin_name)
-                self.register_plugin(Plugin(self, plugin_name, plugin))
-            except:
-                print('Failed to load plugin "%s".' % plugin_name)
-                traceback.print_exc()
-                continue
-
-    def register_plugin(self, plugin):
-        if plugin.init:
-            plugin.init(self)
-        for command, func in plugin.commands.items():
-            self.register_command(command, func)
-        for listener in plugin.listeners:
-            self.register_listener(listener)
-
-        self.plugins[plugin.name] = plugin
-        print('Loaded plugin "%s".' % plugin.name)
+        self.plugins = {
+            plugin.name: plugin
+            for plugin in Plugin.discover_plugins(self)
+        }
 
     def init_callbacks(self):
-        for plugin_name, plugin in self.plugins.items():
-            if plugin.teardown:
-                plugin.teardown(self)
+        for plugin in self.plugins.values():
+            plugin.teardown()
+            for periodic_task in plugin._periodic_tasks:
+                periodic_task.stop()
 
         self.callbacks = {
             'commands': self._get_builtin_commands(),
             'listeners': [],
-            'teardowns': [],
         }
 
     @property
@@ -89,10 +66,6 @@ class Bot(object):
     @property
     def listeners(self):
         return self.callbacks.get('listeners', [])
-
-    @property
-    def teardowns(self):
-        return self.callbacks.get('teardowns', [])
 
     def is_admin(self, raw_message):
         ''' Get users admin status. '''
@@ -125,7 +98,7 @@ class Bot(object):
             return
 
         for listener in self.listeners:
-            self.core.loop.run_in_executor(None, listener, self, sender, message, raw_message)
+            self.core.loop.run_in_executor(None, listener, sender, message, raw_message)
 
         if message.startswith(self.command_char):
             command, message_without_command = self.get_command(message)
@@ -136,7 +109,7 @@ class Bot(object):
             if command in self.commands.keys():
                 if getattr(self.commands[command], '_is_admin_command', False) is True and not self.is_admin(raw_message):
                     return self.respond('This command is only for admins.', raw_message)
-                self.core.loop.run_in_executor(None, self.commands[command], self, sender, message_without_command, raw_message)
+                self.core.loop.run_in_executor(None, self.commands[command], sender, message_without_command, raw_message)
 
     def _get_builtin_commands(self):
         ''' Gets commands built in to the bot. '''
@@ -144,7 +117,7 @@ class Bot(object):
             'help': self.command_help,
         }
 
-    def command_help(self, bot, sender, message, raw_message):
+    def command_help(self, sender, message, raw_message):
         ''' Get help for bot plugins '''
         if not message:
             self.respond(
@@ -193,10 +166,6 @@ class Bot(object):
     def register_listener(self, function_handle):
         ''' Registers listener to the bot. '''
         self.callbacks['listeners'].append(function_handle)
-
-    def register_teardown(self, function_handle):
-        ''' Registers plugin teardown function to the bot. '''
-        self.callbacks['teardowns'].append(function_handle)
 
     def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):
         return self.core.get_url(url, nocache=nocache, params=params, headers=headers, cookies=cookies)

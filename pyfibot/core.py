@@ -10,6 +10,7 @@ class Core(object):
     ''' Bot core, holding the configuration and connecting to bots. '''
 
     def __init__(self, configuration_file='~/.config/pyfibot/pyfibot.yml', log_level='info'):
+        self.loop = asyncio.get_event_loop()
         self.bots = {}
         self.configuration = {}
         self.admins = []
@@ -23,8 +24,8 @@ class Core(object):
 
     def run(self):
         ''' Run bot. '''
-        loop = self.connect_bots()
-        loop.run_forever()
+        self.connect_bots()
+        self.loop.run_forever()
 
     def load_configuration(self):
         ''' (Re)loads configuration from file. '''
@@ -58,10 +59,8 @@ class Core(object):
 
     def connect_bots(self):
         ''' Creates main event loop and connects to bots. '''
-        self.loop = asyncio.get_event_loop()
         for bot in self.bots.values():
             bot.connect()
-        return self.loop
 
     def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):
         ''' Fetch url. '''

@@ -1,5 +1,5 @@
 import re
-from pyfibot.decorators import urlhandler
+from pyfibot.url import urlhandler
 from pyfibot.utils import get_views_string
 
 
