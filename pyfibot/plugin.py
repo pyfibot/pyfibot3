@@ -85,6 +85,7 @@ class Plugin(object):
 
             command_wrapper._command = self.command_name
             command_wrapper._is_command = True
+            command_wrapper.__doc__ = func.__doc__
             return command_wrapper
 
     class admin_command(object):
@@ -105,6 +106,7 @@ class Plugin(object):
             command_wrapper._command = self.command_name
             command_wrapper._is_command = True
             command_wrapper._is_admin_command = True
+            command_wrapper.__doc__ = func.__doc__
             return command_wrapper
 
     class listener(object):

@@ -154,7 +154,7 @@ class Bot(object):
         docstring = self.commands[message].__doc__
         if not docstring:
             return self.respond('Command "%s" has no help.' % message, raw_message=raw_message)
-        self.respond(docstring.split('\n')[0], raw_message=raw_message)
+        self.respond(docstring.strip().split('\n')[0], raw_message=raw_message)
 
     def register_command(self, command, function_handle):
         ''' Registers command to the bot. '''
