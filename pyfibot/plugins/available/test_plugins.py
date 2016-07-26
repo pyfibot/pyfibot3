@@ -37,3 +37,7 @@ class TestPlugin(Plugin):
     @Plugin.interval(1)
     def print_tissit(self, bot):
         bot.respond('TISSIT!', raw_message={'target': '#pyfibot'})
+
+    @Plugin.admin_command('raise_exception')
+    def raise_exception(self, sender, message, raw_message):
+        raise ValueError('TESTING!')

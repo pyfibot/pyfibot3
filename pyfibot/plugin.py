@@ -1,4 +1,5 @@
 import os
+import traceback
 from inspect import getmembers, isclass, ismethod
 from pluginbase import PluginBase
 from pyfibot.periodic_task import PeriodicTask
@@ -59,7 +60,11 @@ class Plugin(object):
                 if not isclass(member[1]) or not issubclass(member[1], Plugin) or member[1] == Plugin:
                     continue
 
-                yield member[1](bot)
+                try:
+                    yield member[1](bot)
+                except:
+                    print('Failed to load plugin "%s".' % plugin_name)
+                    traceback.print_exc()
 
     def init(self):
         pass
@@ -85,7 +90,10 @@ class Plugin(object):
 
         def __call__(self, func):
             def command_wrapper(bot, sender, message, raw_message):
-                return func(bot, sender, message, raw_message)
+                try:
+                    return func(bot, sender, message, raw_message)
+                except:
+                    traceback.print_exc()
 
             command_wrapper._command = self.command_name
             command_wrapper._is_command = True
@@ -105,7 +113,10 @@ class Plugin(object):
 
         def __call__(self, func):
             def command_wrapper(bot, sender, message, raw_message):
-                return func(bot, sender, message, raw_message)
+                try:
+                    return func(bot, sender, message, raw_message)
+                except:
+                    traceback.print_exc()
 
             command_wrapper._command = self.command_name
             command_wrapper._is_command = True
@@ -123,7 +134,10 @@ class Plugin(object):
         '''
         def __call__(self, func):
             def listener_wrapper(bot, sender, message, raw_message):
-                return func(bot, sender, message, raw_message)
+                try:
+                    return func(bot, sender, message, raw_message)
+                except:
+                    traceback.print_exc()
 
             listener_wrapper._is_listener = True
             return listener_wrapper

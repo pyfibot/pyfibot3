@@ -1,4 +1,4 @@
-# import asyncio
+import traceback
 
 
 # https://mail.python.org/pipermail/python-list/2013-November/661060.html
@@ -18,7 +18,10 @@ class PeriodicTask(object):
         )
 
     def _run(self):
-        self._func(self._bot)
+        try:
+            self._func(self._bot)
+        except:
+            traceback.print_exc()
         self._set()
 
     def stop(self):
