@@ -52,14 +52,14 @@ class Plugin(object):
         here = os.path.abspath(os.path.dirname(__file__))
         config_dir = os.path.join(bot.core.configuration_path, 'plugins')
 
-        plugin_base = PluginBase(package='pyfibot.plugins')
-        plugin_source = plugin_base.make_plugin_source(searchpath=[
+        cls.plugin_base = PluginBase(package='pyfibot.plugins')
+        cls.plugin_source = cls.plugin_base.make_plugin_source(searchpath=[
             os.path.abspath(os.path.join(here, 'plugins')),
             config_dir,
         ])
 
-        for plugin_name in plugin_source.list_plugins():
-            plugin = plugin_source.load_plugin(plugin_name)
+        for plugin_name in cls.plugin_source.list_plugins():
+            plugin = cls.plugin_source.load_plugin(plugin_name)
             for member in getmembers(plugin):
                 # Filter out unwanted objects...
                 if not isclass(member[1]) or not issubclass(member[1], Plugin) or member[1] == Plugin:
@@ -141,7 +141,7 @@ class Plugin(object):
                 try:
                     return func(bot, sender, message, raw_message)
                 except:
-                    bot.log.error('Error running listener.' % self.command_name, exc_info=sys.exc_info())
+                    bot.log.error('Error running listener.', exc_info=sys.exc_info())
 
             listener_wrapper._is_listener = True
             return listener_wrapper
