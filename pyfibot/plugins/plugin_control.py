@@ -4,7 +4,7 @@ from pyfibot.plugin import Plugin
 
 
 class PluginControl(Plugin):
-    ENABLED_PLUGINS_DIR = os.path.abspath(os.path.dirname(__file__))
+    BUILTIN_PLUGINS_DIR = os.path.abspath(os.path.dirname(__file__))
 
     def get_python_scripts(self, directory):
         return {
@@ -13,7 +13,9 @@ class PluginControl(Plugin):
         }
 
     def get_enabled_plugins(self):
-        return self.get_python_scripts(self.ENABLED_PLUGINS_DIR)
+        plugins = self.get_python_scripts(self.BUILTIN_PLUGINS_DIR)
+        plugins.update(self.get_python_scripts(self.bot.core.plugin_dir))
+        return plugins
 
     def get_available_plugins(self):
         return self.get_python_scripts(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'available'))
@@ -45,7 +47,7 @@ class PluginControl(Plugin):
         if message in self.get_enabled_plugins().keys():
             return self.bot.respond('Plugin "%s" is already enabled.' % message, raw_message)
 
-        os.symlink(available_plugins[message], os.path.join(self.ENABLED_PLUGINS_DIR, '%s.py' % message))
+        os.symlink(available_plugins[message], os.path.join(self.bot.core.plugin_dir, '%s.py' % message))
 
         self.bot.load_plugins()
         self.bot.respond('Plugin "%s" enabled.' % message, raw_message)

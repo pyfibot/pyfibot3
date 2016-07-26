@@ -30,6 +30,10 @@ class Core(object):
     def load_configuration(self):
         ''' (Re)loads configuration from file. '''
         self.configuration_path = os.path.dirname(self.configuration_file)
+        self.plugin_dir = os.path.join(self.configuration_path, 'plugins')
+
+        if not os.path.exists(self.plugin_dir):
+            os.makedirs(self.plugin_dir)
 
         if not os.path.exists(self.configuration_file):
             # TODO: Maybe actually create the example conf?

@@ -44,8 +44,13 @@ class Plugin(object):
     @classmethod
     def discover_plugins(self, bot):
         here = os.path.abspath(os.path.dirname(__file__))
+        config_dir = os.path.join(bot.core.configuration_path, 'plugins')
+
         self.plugin_base = PluginBase(package='pyfibot.plugins')
-        self.plugin_source = self.plugin_base.make_plugin_source(searchpath=[os.path.abspath(os.path.join(here, 'plugins'))])
+        self.plugin_source = self.plugin_base.make_plugin_source(searchpath=[
+            os.path.abspath(os.path.join(here, 'plugins')),
+            config_dir,
+        ])
 
         for plugin_name in self.plugin_source.list_plugins():
             plugin = self.plugin_source.load_plugin(plugin_name)
