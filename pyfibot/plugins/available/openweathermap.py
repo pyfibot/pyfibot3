@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# import logging
 from datetime import date, datetime, timedelta
 from pyfibot.plugin import Plugin
 
@@ -17,10 +16,6 @@ class OpenWeatherMap(Plugin):
     @Plugin.command(['weather'])
     def command_openweathermap(self, sender, message, raw_message):
         ''' Fetch weather information from OpenWeatherMap. '''
-        if not self.appid:
-            # log.warn("No OpenWeatherMap appid set in configuration")
-            return False
-
         location = message or self.default_location
 
         url = 'http://api.openweathermap.org/data/2.5/weather?q=%s&units=metric&appid=%s'
@@ -29,11 +24,11 @@ class OpenWeatherMap(Plugin):
         try:
             data = r.json()
         except:
-            # log.debug("Couldn't parse JSON.")
+            self.log.debug("Couldn't parse JSON.")
             return self.bot.respond('Error: API error, unable to parse JSON response.', raw_message)
 
         if 'cod' not in data or int(data['cod']) != 200:
-            # log.debug('status != 200')
+            self.log.debug('status != 200')
             return self.bot.respond('Error: API error.', raw_message)
 
         if 'name' not in data:
@@ -88,11 +83,11 @@ class OpenWeatherMap(Plugin):
         try:
             data = r.json()
         except:
-            # log.debug("Couldn't parse JSON.")
+            self.log.debug("Couldn't parse JSON.")
             return self.bot.respond('Error: API error, unable to parse JSON response.', raw_message)
 
         if 'cod' not in data or int(data['cod']) != 200:
-            # log.debug('status != 200')
+            self.log.debug('status != 200')
             return self.bot.respond('Error: API error.', raw_message)
 
         if 'city' not in data or 'name' not in data['city']:

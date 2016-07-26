@@ -1,4 +1,5 @@
 from pyfibot.plugin import Plugin
+from pyfibot.coloredlogger import ColoredLogger
 
 
 class Bot(object):
@@ -28,10 +29,14 @@ class Bot(object):
         ''' Get the protocol of the bot. Useful for implement some plugins only in certain protocols etc. '''
         return self.bot_configuration.get('protocol')
 
+    @property
+    def log(self):
+        return ColoredLogger('%s.%s' % (self.__class__.__name__, self.name))
+
     def load_configuration(self):
         configuration = self.configuration
 
-        print('Reloading bot configuration for "%s".' % (self.name))
+        self.log.info('Reloading bot configuration for "%s".' % (self.name))
         self.nickname = configuration.get('nick') or self.core.nickname
         self.command_char = self.core.command_char if configuration.get('command_char') is None \
             else configuration.get('command_char')
@@ -159,7 +164,7 @@ class Bot(object):
     def register_command(self, command, function_handle):
         ''' Registers command to the bot. '''
         if command in self.commands.keys():
-            print('Command "%s" from "%s" would override existing command -> ignoring.' % (command, function_handle.__name__))
+            self.log.warning('Command "%s" from "%s" would override existing command -> ignoring.' % (command, function_handle.__name__))
             return
         self.callbacks['commands'][command] = function_handle
 

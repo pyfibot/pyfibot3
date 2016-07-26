@@ -8,6 +8,7 @@ from pluginbase import PluginBase
 from datetime import datetime
 from dateutil.tz import tzutc
 import youtube_dl
+from pyfibot.coloredlogger import ColoredLogger
 from pyfibot.utils import get_duration_string, get_views_string, get_relative_time_string, parse_datetime
 
 
@@ -36,18 +37,22 @@ class URL(object):
     def __repr__(self):
         return '<URL "%s">' % self.url
 
+    @property
+    def log(self):
+        return ColoredLogger(self.__class__.__name__)
+
     @classmethod
     def get_urls(cls, string):
         return [URL(url) for url in set(re.findall(cls.url_regex, string))]
 
     def discover_handlers(self):
-        print('Discovering URL handlers')
+        self.log.debug('Discovering URL handlers')
         self.url_handlers = {}
         for plugin_name in self.plugin_source.list_plugins():
             try:
                 plugin = self.plugin_source.load_plugin(plugin_name)
             except:
-                print('Failed to load url handler "%s".' % plugin_name)
+                self.log.error('Failed to load url handler "%s".' % plugin_name)
                 traceback.print_exc()
                 continue
 

@@ -17,7 +17,7 @@ class URLtitle(Plugin):
             title = url.get_title(self.bot, check_reduntant=self.check_reduntant)
 
             if title is False:
-                print('Title returned as False -> not printing.')
+                self.log.debug('Title returned as False -> not printing.')
                 return
 
             if isinstance(title, str):

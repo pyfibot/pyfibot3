@@ -4,6 +4,7 @@ import yaml
 import asyncio
 import requests
 from bs4 import BeautifulSoup
+from pyfibot.coloredlogger import ColoredLogger
 
 
 class Core(object):
@@ -28,6 +29,10 @@ class Core(object):
         self.loop.run_forever()
         self.loop.close()
 
+    @property
+    def log(self):
+        return ColoredLogger(self.__class__.__name__)
+
     def load_configuration(self):
         ''' (Re)loads configuration from file. '''
         self.configuration_path = os.path.dirname(self.configuration_file)
@@ -38,13 +43,13 @@ class Core(object):
 
         if not os.path.exists(self.configuration_file):
             # TODO: Maybe actually create the example conf?
-            print('Configuration file does not exist in "%s". Creating an example configuration for editing.' % (self.configuration_file))
+            self.log.error('Configuration file does not exist in "%s". Creating an example configuration for editing.' % self.configuration_file)
             raise IOError
 
         with open(self.configuration_file, 'r') as f:
             self.configuration = yaml.load(f)
 
-        print('Reloading core configuration.')
+        self.log.info('Reloading core configuration.')
 
         self.admins = self.configuration.get('admins', [])
         self.command_char = self.configuration.get('command_char', '.')

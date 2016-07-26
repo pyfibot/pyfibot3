@@ -1,4 +1,5 @@
-import traceback
+import sys
+from pyfibot.coloredlogger import ColoredLogger
 
 
 # https://mail.python.org/pipermail/python-list/2013-November/661060.html
@@ -11,6 +12,10 @@ class PeriodicTask(object):
         self._loop = self._bot.core.loop
         self._set()
 
+    @property
+    def log(self):
+        return ColoredLogger(self.__class__.__name__)
+
     def _set(self):
         self._handler = self._loop.call_later(
             self._interval,
@@ -21,7 +26,7 @@ class PeriodicTask(object):
         try:
             self._func(self._bot)
         except:
-            traceback.print_exc()
+            self.log.error('Error running task.', exc_info=sys.exc_info())
         self._set()
 
     def stop(self):

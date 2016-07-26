@@ -4,10 +4,7 @@ Parse spotify URLs
 
 from __future__ import unicode_literals, print_function, division
 import re
-# import logging
 from pyfibot.plugin import Plugin
-
-# log = logging.getLogger('spotify')
 
 
 class Spotify(Plugin):
@@ -30,8 +27,8 @@ class Spotify(Plugin):
         r = self.bot.get_url(apiurl)
 
         if r.status_code != 200:
-            # if r.status_code not in [401, 403]:
-            #     log.warning('Spotify API returned %s while trying to fetch %s' % r.status_code, apiurl)
+            if r.status_code not in [401, 403]:
+                self.log.warning('Spotify API returned %s while trying to fetch %s' % r.status_code, apiurl)
             return
 
         data = r.json()

@@ -46,7 +46,7 @@ class IRCbot(Bot):
         @bot.on('CLIENT_DISCONNECT')
         def on_disconnect(**kwargs):
             sleep_time = random.randrange(5, 15, 1)
-            print('%s disconnected. Reconnecting in %i seconds.' % (self.nickname, sleep_time))
+            self.log.warning('%s disconnected. Reconnecting in %i seconds.' % (self.nickname, sleep_time))
             time.sleep(sleep_time)
             self.connect(self.core.loop)
 
@@ -168,7 +168,7 @@ class IRCChannel(object):
 
     def on_bot_join(self, **raw_message):
         ''' Callback to call when bot has joined the channel. '''
-        print('Joined %s' % (raw_message.get('channel')))
+        self.irc_instance.log.info('Joined %s' % (raw_message.get('channel')))
         self.irc_instance._bot.send('WHO', mask=self.name)
 
     def on_user_join(self, **raw_message):
@@ -182,8 +182,7 @@ class IRCChannel(object):
 
     def on_bot_part(self, **raw_message):
         ''' Callback to call when bot parts the channel. '''
-        print('Parted %s' % (raw_message.get('channel')))
-        print(raw_message)
+        self.irc_instance.log.info('Parted %s' % (raw_message.get('channel')))
 
     def on_user_part(self, **raw_message):
         ''' Callback to call when an user parts the channel. '''

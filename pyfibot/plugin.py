@@ -1,7 +1,8 @@
 import os
-import traceback
+import sys
 from inspect import getmembers, isclass, ismethod
 from pluginbase import PluginBase
+from pyfibot.coloredlogger import ColoredLogger
 from pyfibot.periodic_task import PeriodicTask
 
 
@@ -12,7 +13,11 @@ class Plugin(object):
         self.init()
         self._periodic_tasks = []
         self.__discover_methods()
-        print('Loaded plugin "%s".' % self.name)
+        self.log.info('Loaded plugin "%s".' % self.name)
+
+    @property
+    def log(self):
+        return ColoredLogger('plugin.%s' % self.name)
 
     def __discover_methods(self):
         for member in getmembers(self):
@@ -43,18 +48,18 @@ class Plugin(object):
                 self._periodic_tasks.append(PeriodicTask(func, func._interval, self.bot))
 
     @classmethod
-    def discover_plugins(self, bot):
+    def discover_plugins(cls, bot):
         here = os.path.abspath(os.path.dirname(__file__))
         config_dir = os.path.join(bot.core.configuration_path, 'plugins')
 
-        self.plugin_base = PluginBase(package='pyfibot.plugins')
-        self.plugin_source = self.plugin_base.make_plugin_source(searchpath=[
+        plugin_base = PluginBase(package='pyfibot.plugins')
+        plugin_source = plugin_base.make_plugin_source(searchpath=[
             os.path.abspath(os.path.join(here, 'plugins')),
             config_dir,
         ])
 
-        for plugin_name in self.plugin_source.list_plugins():
-            plugin = self.plugin_source.load_plugin(plugin_name)
+        for plugin_name in plugin_source.list_plugins():
+            plugin = plugin_source.load_plugin(plugin_name)
             for member in getmembers(plugin):
                 # Filter out unwanted objects...
                 if not isclass(member[1]) or not issubclass(member[1], Plugin) or member[1] == Plugin:
@@ -63,8 +68,7 @@ class Plugin(object):
                 try:
                     yield member[1](bot)
                 except:
-                    print('Failed to load plugin "%s".' % plugin_name)
-                    traceback.print_exc()
+                    bot.log.error('Failed to load plugin "%s".' % plugin_name, exc_info=sys.exc_info())
 
     def init(self):
         pass
@@ -93,7 +97,7 @@ class Plugin(object):
                 try:
                     return func(bot, sender, message, raw_message)
                 except:
-                    traceback.print_exc()
+                    bot.log.error('Error running command "%s".' % self.command_name, exc_info=sys.exc_info())
 
             command_wrapper._command = self.command_name
             command_wrapper._is_command = True
@@ -116,7 +120,7 @@ class Plugin(object):
                 try:
                     return func(bot, sender, message, raw_message)
                 except:
-                    traceback.print_exc()
+                    bot.log.error('Error running command "%s".' % self.command_name, exc_info=sys.exc_info())
 
             command_wrapper._command = self.command_name
             command_wrapper._is_command = True
@@ -137,7 +141,7 @@ class Plugin(object):
                 try:
                     return func(bot, sender, message, raw_message)
                 except:
-                    traceback.print_exc()
+                    bot.log.error('Error running listener.' % self.command_name, exc_info=sys.exc_info())
 
             listener_wrapper._is_listener = True
             return listener_wrapper
