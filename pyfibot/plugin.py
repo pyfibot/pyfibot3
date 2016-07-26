@@ -67,6 +67,10 @@ class Plugin(object):
     def teardown(self):
         pass
 
+    @property
+    def config(self):
+        return self.bot.core.configuration.get('plugin', {}).get(self.name.lower(), {})
+
     # DECORATORS
     class command(object):
         '''

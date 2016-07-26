@@ -29,9 +29,10 @@ bots:
         channels:
             - '#pyfibot'
 
-plugin_fmi:
-    default_place: 'Lappeenranta'
+plugin:
+    fmi:
+        default_place: 'Lappeenranta'
 
-plugin_openweathermap:
-  appid: '83edfaac9be0cc5292f73e44ebef0864'
-  default_location: 'Lappeenranta'
+    openweathermap:
+      appid: '83edfaac9be0cc5292f73e44ebef0864'
+      default_location: 'Lappeenranta'

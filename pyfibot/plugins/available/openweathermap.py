@@ -4,23 +4,15 @@ from datetime import date, datetime, timedelta
 from pyfibot.plugin import Plugin
 
 
-# log = logging.getLogger('openweather')
-# default_location = 'Helsinki'
-# threshold = 120
-
-# appid = None
-
 class OpenWeatherMap(Plugin):
     def init(self):
-        config = self.bot.core_configuration.get('plugin_openweathermap', {})
-        self.default_location = config.get('default_location', 'Helsinki')
-        # log.info('Using %s as default location' % default_location)
+        self.default_location = self.config.get('default_location', 'Helsinki')
 
-        self.appid = config.get('appid')
+        self.appid = self.config.get('appid')
         if not self.appid:
             raise AttributeError('App ID not set.')
 
-        self.threshold = int(config.get('threshold', 120))  # threshold to show measuring time in minutes
+        self.threshold = int(self.config.get('threshold', 120))  # threshold to show measuring time in minutes
 
     @Plugin.command(['weather'])
     def command_openweathermap(self, sender, message, raw_message):

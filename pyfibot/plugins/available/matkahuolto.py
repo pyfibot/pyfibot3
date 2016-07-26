@@ -9,15 +9,12 @@ from pyfibot.utils import get_relative_time_string
 
 
 class Matkahuolto(Plugin):
-    def init(self):
-        self.lang = self.bot.core_configuration.get('plugin_matkahuolto', {}).get('language', 'en')
-
     @Plugin.command('matkahuolto')
     def matkahuolto(self, sender, message, raw_message):
         ''' Get latest consignment status from Matkahuolto Track & Trace service. '''
         params = {'package_code': message}
 
-        url = 'https://www.matkahuolto.fi/%s/seuranta/tilanne/' % self.lang
+        url = 'https://www.matkahuolto.fi/%s/seuranta/tilanne/' % self.config.get('language', 'en')
 
         try:
             bs = self.bot.get_bs(url, params=params)

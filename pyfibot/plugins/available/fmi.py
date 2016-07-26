@@ -7,13 +7,10 @@ TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
 class FMI(Plugin):
-    def init(self):
-        self.default_place = self.bot.core_configuration.get('plugin_fmi', {}).get('default_place', 'Helsinki')
-
     @Plugin.command(['sää', 'saa', 'fmi'])
     def command_fmi(self, sender, message, raw_message):
         ''' Fetch weather information from Finnish Meteorological Institute. '''
-        place = message or self.default_place
+        place = message or self.config.get('default_place', 'Helsinki')
 
         starttime = (datetime.utcnow() - timedelta(minutes=10)).strftime(TIME_FORMAT) + 'Z'
         params = {

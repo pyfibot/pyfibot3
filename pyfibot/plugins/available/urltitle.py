@@ -4,7 +4,7 @@ from pyfibot.plugin import Plugin
 
 class URLtitle(Plugin):
     def init(self):
-        self.check_reduntant = self.bot.core_configuration.get('urltitle', {}).get('check_reduntant', False)
+        self.check_reduntant = self.config.get('check_reduntant', False)
 
     @Plugin.listener()
     def print_titles(self, sender, message, raw_message):

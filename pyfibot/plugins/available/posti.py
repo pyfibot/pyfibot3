@@ -9,7 +9,7 @@ from urllib.parse import quote_plus
 
 class Posti(Plugin):
     def init(self):
-        self.lang = self.bot.core_configuration.get('plugin_posti', {}).get('language', 'en')
+        self.lang = self.config.get('language', 'en')
 
     @Plugin.command('posti')
     def posti(self, sender, message, raw_message):
