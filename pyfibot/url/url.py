@@ -90,7 +90,7 @@ class URL(object):
             # log.debug("No BS available, returning")
             return
 
-        bs = self.get_fragment(bot, bs)
+        bs = self.get_fragment(bs)
         title = self.get_generic_title(bs)
 
         if check_reduntant and self.check_reduntant(title):
@@ -103,11 +103,8 @@ class URL(object):
 
         class YoutubeDLlogger(object):
             ''' Class to drop all youtube-dl log messages to debug level. '''
-            def __init__(self, parent_logger):
-                self.logger = parent_logger.getChild('youtube-dl')
-
             def debug(self, *args, **kwargs):
-                self.logger.debug(*args, **kwargs)
+                URL.log.getChild('youtube-dl').debug(*args, **kwargs)
 
             def warning(self, *args, **kwargs):
                 self.debug(*args, **kwargs)
@@ -120,7 +117,7 @@ class URL(object):
 
         youtube_dl_options = {
             'extract_flat': True,
-            'logger': YoutubeDLlogger(self.log),
+            'logger': YoutubeDLlogger(),
         }
 
         with youtube_dl.YoutubeDL(youtube_dl_options) as ydl:
@@ -209,7 +206,7 @@ class URL(object):
 
         return urlunsplit((url.scheme, url.netloc, url.path, query, ''))
 
-    def get_fragment(self, bot, bs):
+    def get_fragment(self, bs):
         # According to Google's Making AJAX Applications Crawlable specification
         fragment = bs.find('meta', {'name': 'fragment'})
         if fragment and fragment.get('content') == '!':
