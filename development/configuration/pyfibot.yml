@@ -6,7 +6,7 @@ command_char: '.'
 realname: 'https://github.com/pyfibot/pyfibot3'
 
 admins:
-    - 'kipe!~kipe@172.19.0.1'
+    - 'developer!developer@i.love.debian.org'
 
 # Bot definitions
 bots:
@@ -17,15 +17,6 @@ bots:
         # Server to connect to
         server: 'localhost'
         # List of channels to join
-        channels:
-            - '#pyfibot'
-    pyfibot2:
-        protocol: 'irc'
-        server: 'localhost'
-        # Different port, nick and realname on this bot
-        port: 6668
-        nick: 'pyfibot2'
-        realname: 'pyfibot'
         channels:
             - '#pyfibot'
 
