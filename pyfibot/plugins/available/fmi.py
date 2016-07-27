@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 from math import isnan
 from pyfibot.plugin import Plugin
+from pyfibot.url import URL
 
 TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
@@ -23,7 +24,7 @@ class FMI(Plugin):
             'starttime': starttime
         }
 
-        bs = self.bot.get_bs('http://data.fmi.fi/fmi-apikey/%s/wfs' % 'c86a0cb3-e0bf-4604-bfe9-de3ca92e0afc', params=params)
+        bs = URL.get_bs('http://data.fmi.fi/fmi-apikey/%s/wfs' % 'c86a0cb3-e0bf-4604-bfe9-de3ca92e0afc', params=params)
 
         # Get FMI name, gives the observation place more accurately
         try:

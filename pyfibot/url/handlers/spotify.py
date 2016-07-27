@@ -1,5 +1,5 @@
 import re
-from pyfibot.url import urlhandler
+from pyfibot.url import URL, urlhandler
 
 
 @urlhandler(re.compile(r'((open|play)\.spotify\.com\/)(?P<item>album|artist|track|user[:\/]\S+[:\/]playlist)[:\/](?P<id>[a-zA-Z0-9]+)\/?.*'))
@@ -12,7 +12,7 @@ def spotify(bot, url, match):
         return None
 
     apiurl = "https://api.spotify.com/v1/%s/%s" % ('/'.join(item), spotify_id)
-    r = bot.get_url(apiurl)
+    r = URL.get_url(apiurl)
 
     if r.status_code != 200:
         if r.status_code not in [401, 403]:

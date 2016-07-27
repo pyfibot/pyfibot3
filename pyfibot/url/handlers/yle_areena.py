@@ -1,5 +1,5 @@
 import re
-from pyfibot.url import urlhandler
+from pyfibot.url import URL, urlhandler
 from datetime import timedelta
 from pyfibot.utils import get_utc_datetime, parse_datetime, get_duration_string, get_relative_time_string
 
@@ -83,7 +83,7 @@ def yle_areena(bot, url):
             'app_id': bot.core_configuration.get('urltitle', {}).get('areena', {}).get('app_id', 'cd556936'),
             'app_key': bot.core_configuration.get('urltitle', {}).get('areena', {}).get('app_key', '25a08bbaa8101cca1bf0d1879bb13012'),
         }
-        r = bot.get_url(url=api_url, params=params)
+        r = URL.get_url(url=api_url, params=params)
         if r.status_code != 200:
             return
 
@@ -133,7 +133,7 @@ def yle_areena(bot, url):
             'limit': 100,
         }
 
-        r = bot.get_url(url=api_url, params=params)
+        r = URL.get_url(url=api_url, params=params)
         if r.status_code != 200:
             return
 
@@ -160,7 +160,7 @@ def yle_areena(bot, url):
 
     # There's still no endpoint to fetch the currently playing shows via API :(
     if 'suora' in url.url:
-        bs = bot.get_bs(url.url)
+        bs = URL.get_bs(url.url)
         if not bs:
             return
         container = bs.find('div', {'class': 'selected'})
@@ -178,7 +178,7 @@ def yle_areena(bot, url):
     try:
         identifier = url.path.split('/')[-1]
     except:
-        # log.debug('Areena identifier could not be found.')
+        bot.log.debug('Areena identifier could not be found.')
         return
 
     # Try to get the episode (preferred) or series information from Areena

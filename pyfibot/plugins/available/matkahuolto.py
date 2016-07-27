@@ -4,6 +4,7 @@ Get consignment tracking info from Matkahuolto
 """
 
 from pyfibot.plugin import Plugin
+from pyfibot.url import URL
 from datetime import datetime
 from pyfibot.utils import get_relative_time_string
 
@@ -17,7 +18,7 @@ class Matkahuolto(Plugin):
         url = 'https://www.matkahuolto.fi/%s/seuranta/tilanne/' % self.config.get('language', 'en')
 
         try:
-            bs = self.bot.get_bs(url, params=params)
+            bs = URL.get_bs(url, params=params)
 
             events = bs.select('.events-table table tbody tr')
             if not events:

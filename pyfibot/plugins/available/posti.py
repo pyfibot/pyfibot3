@@ -3,6 +3,7 @@ Get shipment tracking info from Posti
 """
 
 from pyfibot.plugin import Plugin
+from pyfibot.url import URL
 from pyfibot.utils import parse_datetime, get_relative_time_string
 from urllib.parse import quote_plus
 
@@ -21,7 +22,7 @@ class Posti(Plugin):
         url = 'http://www.posti.fi/henkiloasiakkaat/seuranta/api/shipments/%s' % quote_plus(message)
 
         try:
-            r = self.bot.get_url(url)
+            r = URL.get_url(url)
             r.raise_for_status()
             data = r.json()
             shipment = data['shipments'][0]

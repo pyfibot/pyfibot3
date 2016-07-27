@@ -1,10 +1,11 @@
 from pyfibot.plugin import Plugin
+from pyfibot.url import URL
 from pyfibot.utils import get_timezone_datetime, parse_datetime
 
 
 class Skinfo(Plugin):
     def _fetch_restaurant(self, restaurant):
-        response = self.bot.get_url('http://skinfo.dy.fi/api/complete.json')
+        response = URL.get_url('http://skinfo.dy.fi/api/complete.json')
         if response.status_code != 200:
             return 'Skinfo alhaalla?'
 

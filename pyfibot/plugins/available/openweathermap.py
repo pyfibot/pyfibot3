@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import date, datetime, timedelta
+from pyfibot.url import URL
 from pyfibot.plugin import Plugin
 
 
@@ -19,7 +20,7 @@ class OpenWeatherMap(Plugin):
         location = message or self.default_location
 
         url = 'http://api.openweathermap.org/data/2.5/weather?q=%s&units=metric&appid=%s'
-        r = self.bot.get_url(url % (location, self.appid))
+        r = URL.get_url(url % (location, self.appid))
 
         try:
             data = r.json()
@@ -78,7 +79,7 @@ class OpenWeatherMap(Plugin):
         location = message or self.default_location
 
         url = 'http://api.openweathermap.org/data/2.5/forecast/daily?q=%s&cnt=5&mode=json&units=metric&appid=%s'
-        r = self.bot.get_url(url % (location, self.appid))
+        r = URL.get_url(url % (location, self.appid))
 
         try:
             data = r.json()

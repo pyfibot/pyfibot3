@@ -3,8 +3,6 @@ import sys
 import click
 import yaml
 import asyncio
-import requests
-from bs4 import BeautifulSoup
 import logging
 from pyfibot import coloredlogger
 
@@ -97,56 +95,6 @@ class Core(object):
         ''' Creates main event loop and connects to bots. '''
         for bot in self.bots.values():
             bot.connect()
-
-    def get_url(self, url, nocache=False, params=None, headers=None, cookies=None):
-        ''' Fetch url. '''
-        # TODO: clean-up, straight copy from original pyfibot
-        #       possibly add raise_for_status?
-        s = requests.session()
-        s.stream = True  # Don't fetch content unless asked
-        s.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0'})
-        # Custom headers from requester
-        if headers:
-            s.headers.update(headers)
-        # Custom cookies from requester
-        if cookies:
-            s.cookies.update(cookies)
-
-        try:
-            r = s.get(url, params=params)
-        except requests.exceptions.InvalidSchema:
-            # log.error("Invalid schema in URI: %s" % url)
-            return None
-        except requests.exceptions.SSLError:
-            # log.error("SSL Error when connecting to %s" % url)
-            return None
-        except requests.exceptions.ConnectionError:
-            # log.error("Connection error when connecting to %s" % url)
-            return None
-
-        size = int(r.headers.get('Content-Length', 0)) // 1024
-        # log.debug("Content-Length: %dkB" % size)
-        if size > 2048:
-            # log.warn("Content too large, will not fetch: %skB %s" % (size, url))
-            return None
-
-        return r
-
-    def get_bs(self, url, nocache=False, params=None, headers=None, cookies=None):
-        ''' Fetch BeautifulSoup from url. '''
-        # TODO: clean-up, straight copy from original pyfibot
-        r = self.get_url(url, nocache=nocache, params=params, headers=headers, cookies=cookies)
-        if not r:
-            return None
-
-        content_type = r.headers['content-type'].split(';')[0]
-        if content_type not in ['text/html', 'text/xml', 'application/xhtml+xml']:
-            # log.debug("Content-type %s not parseable" % content_type)
-            return None
-
-        if r.content:
-            return BeautifulSoup(r.content, 'html.parser')
-        return None
 
 
 @click.command()
