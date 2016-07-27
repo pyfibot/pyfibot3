@@ -284,6 +284,20 @@ class URL(object):
             return BeautifulSoup(r.content, 'html.parser')
         return None
 
+    @staticmethod
+    def get_json(url, nocache=False, params=None, headers=None, cookies=None):
+        ''' Fetch BeautifulSoup from url. '''
+        # TODO: clean-up, straight copy from original pyfibot
+        r = URL.get_url(url, nocache=nocache, params=params, headers=headers, cookies=cookies)
+        if not r:
+            return None
+
+        try:
+            return r.json()
+        except:
+            URL.log.warn('Failed to fetch JSON.')
+            return None
+
 
 class urlhandler(object):
     '''
