@@ -84,7 +84,7 @@ class URL(object):
             return title
 
         # Fallback to generic handler
-        bs = self.get_bs(self.url)
+        bs = self.get_bs()
         if not bs:
             # If fetching BS failed, return False
             # log.debug("No BS available, returning")
@@ -191,11 +191,11 @@ class URL(object):
         return title.strip()
 
     # https://developers.google.com/webmasters/ajax-crawling/docs/specification
-    def __escaped_fragment(self, url, meta=False):
-        url = urlsplit(url)
+    def __escaped_fragment(self, meta=False):
+        url = urlsplit(self.url)
         if not url.fragment or not url.fragment.startswith('!'):
             if not meta:
-                return url.geturl()
+                return self.url
 
         query = url.query
         if query:
@@ -204,15 +204,15 @@ class URL(object):
         if url.fragment:
             query += url.fragment[1:]
 
-        return urlunsplit((url.scheme, url.netloc, url.path, query, ''))
+        return URL(urlunsplit((url.scheme, url.netloc, url.path, query, '')))
 
     def get_fragment(self, bs):
         # According to Google's Making AJAX Applications Crawlable specification
         fragment = bs.find('meta', {'name': 'fragment'})
         if fragment and fragment.get('content') == '!':
             # log.debug("Fragment meta tag on page, getting non-ajax version")
-            url = self.__escaped_fragment(self.url, meta=True)
-            bs = self.get_url(url)
+            url = self.__escaped_fragment(meta=True)
+            bs = URL(url).get_bs()
         return bs
 
     def get_generic_title(self, bs):
@@ -232,8 +232,7 @@ class URL(object):
         ''' Returns True if the url and title are similar enough. '''
         return
 
-    @staticmethod
-    def get_url(url, nocache=False, params=None, headers=None, cookies=None):
+    def get_url(self, nocache=False, params=None, headers=None, cookies=None):
         ''' Fetch url. '''
         # TODO: clean-up, straight copy from original pyfibot
         #       possibly add raise_for_status?
@@ -248,47 +247,44 @@ class URL(object):
             s.cookies.update(cookies)
 
         try:
-            r = s.get(url, params=params)
+            r = s.get(self.url, params=params)
         except requests.exceptions.InvalidSchema:
-            URL.log.error("Invalid schema in URI: %s" % url)
+            self.log.error("Invalid schema in URI: %s" % self.url)
             return None
         except requests.exceptions.SSLError:
-            URL.log.error("SSL Error when connecting to %s" % url)
+            self.log.error("SSL Error when connecting to %s" % self.url)
             return None
         except requests.exceptions.ConnectionError:
-            URL.log.error("Connection error when connecting to %s" % url)
+            self.log.error("Connection error when connecting to %s" % self.url)
             return None
 
         size = int(r.headers.get('Content-Length', 0)) // 1024
         # log.debug("Content-Length: %dkB" % size)
         if size > 2048:
-            URL.log.warn("Content too large, will not fetch: %skB %s" % (size, url))
+            self.log.warn("Content too large, will not fetch: %skB %s" % (size, self.url))
             return None
 
         return r
 
-    @staticmethod
-    def get_bs(url, nocache=False, params=None, headers=None, cookies=None):
+    def get_bs(self, *args, **kwargs):
         ''' Fetch BeautifulSoup from url. '''
         # TODO: clean-up, straight copy from original pyfibot
-        r = URL.get_url(url, nocache=nocache, params=params, headers=headers, cookies=cookies)
+        r = self.get_url(*args, **kwargs)
         if not r:
             return None
 
         content_type = r.headers['content-type'].split(';')[0]
         if content_type not in ['text/html', 'text/xml', 'application/xhtml+xml']:
-            URL.log.debug("Content-type %s not parseable" % content_type)
+            self.log.debug("Content-type %s not parseable" % content_type)
             return None
 
         if r.content:
             return BeautifulSoup(r.content, 'html.parser')
         return None
 
-    @staticmethod
-    def get_json(url, nocache=False, params=None, headers=None, cookies=None):
-        ''' Fetch BeautifulSoup from url. '''
-        # TODO: clean-up, straight copy from original pyfibot
-        r = URL.get_url(url, nocache=nocache, params=params, headers=headers, cookies=cookies)
+    def get_json(self, *args, **kwargs):
+        ''' Fetch JSON from url. '''
+        r = self.get_url(*args, **kwargs)
         if not r:
             return None
 

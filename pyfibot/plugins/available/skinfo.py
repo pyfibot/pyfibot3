@@ -5,11 +5,9 @@ from pyfibot.utils import get_timezone_datetime, parse_datetime
 
 class Skinfo(Plugin):
     def _fetch_restaurant(self, restaurant):
-        response = URL.get_url('http://skinfo.dy.fi/api/complete.json')
-        if response.status_code != 200:
+        json = URL('http://skinfo.dy.fi/api/complete.json').get_json()
+        if not json:
             return 'Skinfo alhaalla?'
-
-        json = response.json()
 
         now = get_timezone_datetime('Europe/Helsinki')
         for date, data in json.get('restaurants', {}).get(restaurant, {}).get('days', {}).items():

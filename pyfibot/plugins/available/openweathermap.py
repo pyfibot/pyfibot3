@@ -19,13 +19,9 @@ class OpenWeatherMap(Plugin):
         ''' Fetch weather information from OpenWeatherMap. '''
         location = message or self.default_location
 
-        url = 'http://api.openweathermap.org/data/2.5/weather?q=%s&units=metric&appid=%s'
-        r = URL.get_url(url % (location, self.appid))
-
-        try:
-            data = r.json()
-        except:
-            self.log.debug("Couldn't parse JSON.")
+        url = 'http://api.openweathermap.org/data/2.5/weather?q=%s&units=metric&appid=%s' % (location, self.appid)
+        data = URL(url).get_json()
+        if not data:
             return self.bot.respond('Error: API error, unable to parse JSON response.', raw_message)
 
         if 'cod' not in data or int(data['cod']) != 200:
@@ -78,13 +74,10 @@ class OpenWeatherMap(Plugin):
         ''' Fetch weather forecast from OpenWeatherMap. '''
         location = message or self.default_location
 
-        url = 'http://api.openweathermap.org/data/2.5/forecast/daily?q=%s&cnt=5&mode=json&units=metric&appid=%s'
-        r = URL.get_url(url % (location, self.appid))
+        url = 'http://api.openweathermap.org/data/2.5/forecast/daily?q=%s&cnt=5&mode=json&units=metric&appid=%s' % (location, self.appid)
+        data = URL(url).get_json()
 
-        try:
-            data = r.json()
-        except:
-            self.log.debug("Couldn't parse JSON.")
+        if not data:
             return self.bot.respond('Error: API error, unable to parse JSON response.', raw_message)
 
         if 'cod' not in data or int(data['cod']) != 200:

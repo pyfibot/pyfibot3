@@ -5,8 +5,10 @@ from pyfibot.utils import get_views_string
 
 @urlhandler(re.compile(r'imdb\.com/title/(?P<imdb_id>tt[0-9]+)/?'))
 def imdb(bot, url, match):
-    r = URL.get_url('http://www.omdbapi.com/', params={'i': match.group('imdb_id')})
-    data = r.json()
+    data = URL('http://www.omdbapi.com/').get_json(params={'i': match.group('imdb_id')})
+    if not data:
+        bot.log.error('Failed to fetch IMDB ID "%s"' % match.group('imdb_id'))
+        return
 
     name = data['Title']
     year = data['Year']

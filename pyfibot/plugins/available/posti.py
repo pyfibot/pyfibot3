@@ -20,15 +20,11 @@ class Posti(Plugin):
             return self.bot.respond('Tracking ID is required.', raw_message)
 
         url = 'http://www.posti.fi/henkiloasiakkaat/seuranta/api/shipments/%s' % quote_plus(message)
-
-        try:
-            r = URL.get_url(url)
-            r.raise_for_status()
-            data = r.json()
-            shipment = data['shipments'][0]
-        except Exception:
+        data = URL(url).get_json()
+        if not data or not data.get('shipments'):
             return self.bot.respond('Error while getting tracking data. Check the tracking ID or try again later.', raw_message)
 
+        shipment = data['shipments'][0]
         phase = shipment['phase']
         eta_timestamp = shipment.get('estimatedDeliveryTime')
         latest_event = shipment['events'][0]

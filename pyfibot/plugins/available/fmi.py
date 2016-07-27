@@ -24,7 +24,7 @@ class FMI(Plugin):
             'starttime': starttime
         }
 
-        bs = URL.get_bs('http://data.fmi.fi/fmi-apikey/%s/wfs' % 'c86a0cb3-e0bf-4604-bfe9-de3ca92e0afc', params=params)
+        bs = URL('http://data.fmi.fi/fmi-apikey/%s/wfs' % 'c86a0cb3-e0bf-4604-bfe9-de3ca92e0afc').get_bs(params=params)
 
         # Get FMI name, gives the observation place more accurately
         try:
