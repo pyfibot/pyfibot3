@@ -67,11 +67,35 @@ class Core(object):
 
         if not os.path.exists(self.configuration_file):
             # TODO: Maybe actually create the example conf?
-            print('Configuration file does not exist in "%s". Creating an example configuration for editing.' % self.configuration_file)
+            print('Configuration file does not exist in "%s". Creating a minimal configuration for editing.' % self.configuration_file)
+            with open(self.configuration_file, 'w') as file_handle:
+                yaml.safe_dump(
+                    {
+                        'REMOVE_ONCE_EDITED': '',
+                        'nick': 'pyfibot',
+                        'admins': ['nonick!nouser@nodomain.com'],
+                        'bots': {
+                            'mybot': {
+                                'protocol': 'irc',
+                                'server': 'localhost',
+                                'channels': [
+                                    '#pyfibot'
+                                ]
+                            }
+                        }
+                    },
+                    stream=file_handle,
+                    default_flow_style=False,
+                    indent=4
+                )
             raise IOError
 
-        with open(self.configuration_file, 'r') as f:
-            self.configuration = yaml.load(f)
+        with open(self.configuration_file, 'r') as file_handle:
+            self.configuration = yaml.load(file_handle)
+
+        if 'REMOVE_ONCE_EDITED' in self.configuration.keys():
+            print('Configuration file "%s" is unedited, refusing to start.' % self.configuration_file)
+            raise IOError
 
         self.log.info('Reloading core configuration.')
 

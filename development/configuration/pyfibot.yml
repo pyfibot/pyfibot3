@@ -3,7 +3,7 @@ nick: 'pyfibot'
 # Set the command character for the bot
 command_char: '.'
 # Set realname for the bot
-realname: 'https://github.com/lepinkainen/pyfibot'
+realname: 'https://github.com/pyfibot/pyfibot3'
 
 admins:
     - 'kipe!~kipe@172.19.0.1'
