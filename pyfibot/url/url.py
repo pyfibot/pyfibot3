@@ -253,19 +253,19 @@ class URL(object):
         try:
             r = s.get(url, params=params)
         except requests.exceptions.InvalidSchema:
-            # log.error("Invalid schema in URI: %s" % url)
+            URL.log.error("Invalid schema in URI: %s" % url)
             return None
         except requests.exceptions.SSLError:
-            # log.error("SSL Error when connecting to %s" % url)
+            URL.log.error("SSL Error when connecting to %s" % url)
             return None
         except requests.exceptions.ConnectionError:
-            # log.error("Connection error when connecting to %s" % url)
+            URL.log.error("Connection error when connecting to %s" % url)
             return None
 
         size = int(r.headers.get('Content-Length', 0)) // 1024
         # log.debug("Content-Length: %dkB" % size)
         if size > 2048:
-            # log.warn("Content too large, will not fetch: %skB %s" % (size, url))
+            URL.log.warn("Content too large, will not fetch: %skB %s" % (size, url))
             return None
 
         return r
@@ -280,7 +280,7 @@ class URL(object):
 
         content_type = r.headers['content-type'].split(';')[0]
         if content_type not in ['text/html', 'text/xml', 'application/xhtml+xml']:
-            # log.debug("Content-type %s not parseable" % content_type)
+            URL.log.debug("Content-type %s not parseable" % content_type)
             return None
 
         if r.content:
