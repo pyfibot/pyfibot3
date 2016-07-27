@@ -47,18 +47,18 @@ class Plugin(object):
             if getattr(func, '_is_interval', False) is True:
                 self._periodic_tasks.append(PeriodicTask(func, func._interval, self.bot))
 
-    @classmethod
-    def discover_plugins(cls, bot):
+    @staticmethod
+    def discover_plugins(bot):
         here = os.path.abspath(os.path.dirname(__file__))
 
-        cls.plugin_base = PluginBase(package='pyfibot.plugins')
-        cls.plugin_source = cls.plugin_base.make_plugin_source(searchpath=[
+        bot.plugin_base = PluginBase(package='pyfibot.plugins')
+        bot.plugin_source = bot.plugin_base.make_plugin_source(searchpath=[
             os.path.abspath(os.path.join(here, 'plugins')),
             bot.core.plugin_path,
         ])
 
-        for plugin_name in cls.plugin_source.list_plugins():
-            plugin = cls.plugin_source.load_plugin(plugin_name)
+        for plugin_name in bot.plugin_source.list_plugins():
+            plugin = bot.plugin_source.load_plugin(plugin_name)
             for member in getmembers(plugin):
                 # Filter out unwanted objects...
                 if not isclass(member[1]) or not issubclass(member[1], Plugin) or member[1] == Plugin:
