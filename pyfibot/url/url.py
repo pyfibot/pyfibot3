@@ -1,6 +1,7 @@
 import re
 import os
 import traceback
+import logging
 from fnmatch import fnmatch
 from inspect import getmembers, isfunction
 from urllib.parse import urlsplit, urlunsplit, parse_qs
@@ -8,7 +9,6 @@ from pluginbase import PluginBase
 from datetime import datetime
 from dateutil.tz import tzutc
 import youtube_dl
-from pyfibot.coloredlogger import ColoredLogger
 from pyfibot.utils import get_duration_string, get_views_string, get_relative_time_string, parse_datetime
 
 
@@ -24,6 +24,8 @@ class URL(object):
     here = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     plugin_base = PluginBase(package='pyfibot.url.handlers')
     plugin_source = plugin_base.make_plugin_source(searchpath=[os.path.join(here, 'handlers')])
+    handlers = {}
+    log = logging.getLogger('URL')
 
     def __init__(self, url):
         self.url = url
@@ -32,27 +34,23 @@ class URL(object):
         self.path = self.components.path
         self.query_parameters = parse_qs(self.components.query)
         self.clean_url = url.replace('%s://' % self.components.scheme, '').replace('www.', '')
-        self.handlers = self.discover_handlers()
 
     def __repr__(self):
         return '<URL "%s">' % self.url
-
-    @property
-    def log(self):
-        return ColoredLogger(self.__class__.__name__)
 
     @classmethod
     def get_urls(cls, string):
         return [URL(url) for url in set(re.findall(cls.url_regex, string))]
 
-    def discover_handlers(self):
-        self.log.debug('Discovering URL handlers')
-        self.url_handlers = {}
-        for plugin_name in self.plugin_source.list_plugins():
+    @staticmethod
+    def discover_handlers():
+        URL.log.debug('Discovering URL handlers')
+        URL.handlers = {}
+        for plugin_name in URL.plugin_source.list_plugins():
             try:
-                plugin = self.plugin_source.load_plugin(plugin_name)
+                plugin = URL.plugin_source.load_plugin(plugin_name)
             except:
-                self.log.error('Failed to load url handler "%s".' % plugin_name)
+                URL.log.error('Failed to load url handler "%s".' % plugin_name)
                 traceback.print_exc()
                 continue
 
@@ -62,9 +60,9 @@ class URL(object):
                     continue
 
                 if getattr(func, '_is_urlhandler', False) is True:
-                    self.url_handlers[func._url_matcher] = func
+                    URL.handlers[func._url_matcher] = func
 
-        return self.url_handlers
+        return URL.handlers
 
     def get_title(self, bot, check_reduntant=False):
         title = None
@@ -100,7 +98,30 @@ class URL(object):
 
     def get_video_info(self):
         ''' Gets (possible) video information using YoutubeDL. '''
-        with youtube_dl.YoutubeDL(params={'extract_flat': True}) as ydl:
+
+        class YoutubeDLlogger(object):
+            ''' Class to drop all youtube-dl log messages to debug level. '''
+            def __init__(self, parent_logger):
+                self.logger = parent_logger.getChild('youtube-dl')
+
+            def debug(self, *args, **kwargs):
+                self.logger.debug(*args, **kwargs)
+
+            def warning(self, *args, **kwargs):
+                self.debug(*args, **kwargs)
+
+            def error(self, *args, **kwargs):
+                self.debug(*args, **kwargs)
+
+            def critical(self, *args, **kwargs):
+                self.debug(*args, **kwargs)
+
+        youtube_dl_options = {
+            'extract_flat': True,
+            'logger': YoutubeDLlogger(self.log),
+        }
+
+        with youtube_dl.YoutubeDL(youtube_dl_options) as ydl:
             try:
                 info = ydl.extract_info(self.url, download=False)
             except youtube_dl.utils.DownloadError:

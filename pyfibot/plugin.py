@@ -1,8 +1,8 @@
 import os
 import sys
+import logging
 from inspect import getmembers, isclass, ismethod
 from pluginbase import PluginBase
-from pyfibot.coloredlogger import ColoredLogger
 from pyfibot.periodic_task import PeriodicTask
 
 
@@ -17,7 +17,7 @@ class Plugin(object):
 
     @property
     def log(self):
-        return ColoredLogger('plugin.%s' % self.name)
+        return logging.getLogger('plugin.%s' % self.name)
 
     def __discover_methods(self):
         for member in getmembers(self):
@@ -50,12 +50,11 @@ class Plugin(object):
     @classmethod
     def discover_plugins(cls, bot):
         here = os.path.abspath(os.path.dirname(__file__))
-        config_dir = os.path.join(bot.core.configuration_path, 'plugins')
 
         cls.plugin_base = PluginBase(package='pyfibot.plugins')
         cls.plugin_source = cls.plugin_base.make_plugin_source(searchpath=[
             os.path.abspath(os.path.join(here, 'plugins')),
-            config_dir,
+            bot.core.plugin_path,
         ])
 
         for plugin_name in cls.plugin_source.list_plugins():

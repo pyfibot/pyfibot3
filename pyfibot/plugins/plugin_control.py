@@ -14,7 +14,7 @@ class PluginControl(Plugin):
 
     def get_enabled_plugins(self):
         plugins = self.get_python_scripts(self.BUILTIN_PLUGINS_DIR)
-        plugins.update(self.get_python_scripts(self.bot.core.plugin_dir))
+        plugins.update(self.get_python_scripts(self.bot.core.plugin_path))
         return plugins
 
     def get_available_plugins(self):
@@ -47,7 +47,7 @@ class PluginControl(Plugin):
         if message in self.get_enabled_plugins().keys():
             return self.bot.respond('Plugin "%s" is already enabled.' % message, raw_message)
 
-        os.symlink(available_plugins[message], os.path.join(self.bot.core.plugin_dir, '%s.py' % message))
+        os.symlink(available_plugins[message], os.path.join(self.bot.core.plugin_path, '%s.py' % message))
 
         self.bot.load_plugins()
         self.bot.respond('Plugin "%s" enabled.' % message, raw_message)

@@ -4,6 +4,7 @@ from pyfibot.plugin import Plugin
 
 class URLtitle(Plugin):
     def init(self):
+        URL.discover_handlers()
         self.check_reduntant = self.config.get('check_reduntant', False)
 
     @Plugin.listener()

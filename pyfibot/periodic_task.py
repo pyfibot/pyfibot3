@@ -1,5 +1,4 @@
 import sys
-from pyfibot.coloredlogger import ColoredLogger
 
 
 # https://mail.python.org/pipermail/python-list/2013-November/661060.html
@@ -14,7 +13,7 @@ class PeriodicTask(object):
 
     @property
     def log(self):
-        return ColoredLogger(self.__class__.__name__)
+        return self._bot.core.logger.getChild(self.__class__.__name__)
 
     def _set(self):
         self._handler = self._loop.call_later(

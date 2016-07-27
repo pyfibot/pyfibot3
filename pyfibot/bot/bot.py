@@ -1,5 +1,5 @@
+import logging
 from pyfibot.plugin import Plugin
-from pyfibot.coloredlogger import ColoredLogger
 
 
 class Bot(object):
@@ -31,7 +31,7 @@ class Bot(object):
 
     @property
     def log(self):
-        return ColoredLogger('%s.%s' % (self.__class__.__name__, self.name))
+        return logging.getLogger('%s.%s' % (self.__class__.__name__, self.name))
 
     def load_configuration(self):
         configuration = self.configuration
