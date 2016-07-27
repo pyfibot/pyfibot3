@@ -83,7 +83,7 @@ def yle_areena(bot, url):
             'app_id': bot.core_configuration.get('urltitle', {}).get('areena', {}).get('app_id', 'cd556936'),
             'app_key': bot.core_configuration.get('urltitle', {}).get('areena', {}).get('app_key', '25a08bbaa8101cca1bf0d1879bb13012'),
         }
-        data = URL(api_url).get_json(params=params)
+        data = URL.get_json(api_url, params=params)
         if not data:
             return
 
@@ -133,7 +133,7 @@ def yle_areena(bot, url):
             'limit': 100,
         }
 
-        data = URL(api_url).get_json(params=params)
+        data = URL.get_json(api_url, params=params)
         if not data:
             return
 
@@ -160,7 +160,7 @@ def yle_areena(bot, url):
 
     # There's still no endpoint to fetch the currently playing shows via API :(
     if 'suora' in url.url:
-        bs = URL(url.url).get_bs()
+        bs = URL.get_bs(url.url)
         if not bs:
             return
         container = bs.find('div', {'class': 'selected'})

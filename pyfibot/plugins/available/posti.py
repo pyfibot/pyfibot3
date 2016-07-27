@@ -20,7 +20,7 @@ class Posti(Plugin):
             return self.bot.respond('Tracking ID is required.', raw_message)
 
         url = 'http://www.posti.fi/henkiloasiakkaat/seuranta/api/shipments/%s' % quote_plus(message)
-        data = URL(url).get_json()
+        data = URL.get_json(url)
         if not data or not data.get('shipments'):
             return self.bot.respond('Error while getting tracking data. Check the tracking ID or try again later.', raw_message)
 

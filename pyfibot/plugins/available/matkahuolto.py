@@ -18,7 +18,7 @@ class Matkahuolto(Plugin):
         url = 'https://www.matkahuolto.fi/%s/seuranta/tilanne/' % self.config.get('language', 'en')
 
         try:
-            bs = URL(url).get_bs(params=params)
+            bs = URL.get_bs(url, params=params)
 
             events = bs.select('.events-table table tbody tr')
             if not events:

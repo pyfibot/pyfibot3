@@ -11,7 +11,7 @@ def spotify(bot, url, match):
         # All playlists seem to return 401 at the time, even the public ones
         return None
 
-    data = URL('https://api.spotify.com/v1/%s/%s' % ('/'.join(item), spotify_id)).get_json()
+    data = URL.get_json('https://api.spotify.com/v1/%s/%s' % ('/'.join(item), spotify_id))
     if not data:
         bot.log.error('Failed to fetch Spotify ID "%s"' & spotify_id)
         return

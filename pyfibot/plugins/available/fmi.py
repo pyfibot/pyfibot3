@@ -8,6 +8,9 @@ TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
 class FMI(Plugin):
+    def init(self):
+        self.api_key = self.config.get('api_key', 'c86a0cb3-e0bf-4604-bfe9-de3ca92e0afc')
+
     @Plugin.command(['sää', 'saa', 'fmi'])
     def command_fmi(self, sender, message, raw_message):
         ''' Fetch weather information from Finnish Meteorological Institute. '''
@@ -24,7 +27,7 @@ class FMI(Plugin):
             'starttime': starttime
         }
 
-        bs = URL('http://data.fmi.fi/fmi-apikey/%s/wfs' % 'c86a0cb3-e0bf-4604-bfe9-de3ca92e0afc').get_bs(params=params)
+        bs = URL.get_bs('http://data.fmi.fi/fmi-apikey/%s/wfs' % self.api_key, params=params)
 
         # Get FMI name, gives the observation place more accurately
         try:

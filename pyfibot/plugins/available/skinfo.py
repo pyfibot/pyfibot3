@@ -5,7 +5,7 @@ from pyfibot.utils import get_timezone_datetime, parse_datetime
 
 class Skinfo(Plugin):
     def _fetch_restaurant(self, restaurant):
-        json = URL('http://skinfo.dy.fi/api/complete.json').get_json()
+        json = URL.get_json('http://skinfo.dy.fi/api/complete.json')
         if not json:
             return 'Skinfo alhaalla?'
 

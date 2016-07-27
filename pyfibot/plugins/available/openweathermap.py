@@ -20,7 +20,7 @@ class OpenWeatherMap(Plugin):
         location = message or self.default_location
 
         url = 'http://api.openweathermap.org/data/2.5/weather?q=%s&units=metric&appid=%s' % (location, self.appid)
-        data = URL(url).get_json()
+        data = URL.get_json(url)
         if not data:
             return self.bot.respond('Error: API error, unable to parse JSON response.', raw_message)
 
@@ -75,7 +75,7 @@ class OpenWeatherMap(Plugin):
         location = message or self.default_location
 
         url = 'http://api.openweathermap.org/data/2.5/forecast/daily?q=%s&cnt=5&mode=json&units=metric&appid=%s' % (location, self.appid)
-        data = URL(url).get_json()
+        data = URL.get_json(url)
 
         if not data:
             return self.bot.respond('Error: API error, unable to parse JSON response.', raw_message)

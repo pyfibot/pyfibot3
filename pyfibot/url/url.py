@@ -2,6 +2,7 @@ import re
 import os
 import traceback
 import logging
+import functools
 from fnmatch import fnmatch
 from inspect import getmembers, isfunction
 from urllib.parse import urlsplit, urlunsplit, parse_qs
@@ -36,6 +37,11 @@ class URL(object):
         self.path = self.components.path
         self.query_parameters = parse_qs(self.components.query)
         self.clean_url = url.replace('%s://' % self.components.scheme, '').replace('www.', '')
+
+        # Override classmethods with instance methods, including the url.
+        self.get_url = functools.partial(URL.get_url, url=self.url)
+        self.get_bs = functools.partial(URL.get_bs, url=self.url)
+        self.get_json = functools.partial(URL.get_json, url=self.url)
 
     def __repr__(self):
         return '<URL "%s">' % self.url
@@ -232,59 +238,58 @@ class URL(object):
         ''' Returns True if the url and title are similar enough. '''
         return
 
-    def get_url(self, nocache=False, params=None, headers=None, cookies=None):
+    @classmethod
+    def get_url(cls, url, **kwargs):
         ''' Fetch url. '''
         # TODO: clean-up, straight copy from original pyfibot
         #       possibly add raise_for_status?
         s = requests.session()
         s.stream = True  # Don't fetch content unless asked
+
+        # Fake headers, as some sites don't respond well to bots...
         s.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0'})
-        # Custom headers from requester
-        if headers:
-            s.headers.update(headers)
-        # Custom cookies from requester
-        if cookies:
-            s.cookies.update(cookies)
 
         try:
-            r = s.get(self.url, params=params)
+            r = s.get(url, **kwargs)
         except requests.exceptions.InvalidSchema:
-            self.log.error("Invalid schema in URI: %s" % self.url)
+            cls.log.error("Invalid schema in URI: %s" % url)
             return None
         except requests.exceptions.SSLError:
-            self.log.error("SSL Error when connecting to %s" % self.url)
+            cls.log.error("SSL Error when connecting to %s" % url)
             return None
         except requests.exceptions.ConnectionError:
-            self.log.error("Connection error when connecting to %s" % self.url)
+            cls.log.error("Connection error when connecting to %s" % url)
             return None
 
         size = int(r.headers.get('Content-Length', 0)) // 1024
         # log.debug("Content-Length: %dkB" % size)
         if size > 2048:
-            self.log.warn("Content too large, will not fetch: %skB %s" % (size, self.url))
+            cls.log.warn('Content too large, will not fetch: %skB %s' % (size, url))
             return None
 
         return r
 
-    def get_bs(self, *args, **kwargs):
+    @classmethod
+    def get_bs(cls, url, **kwargs):
         ''' Fetch BeautifulSoup from url. '''
         # TODO: clean-up, straight copy from original pyfibot
-        r = self.get_url(*args, **kwargs)
+        r = cls.get_url(url=url, **kwargs)
         if not r:
             return None
 
         content_type = r.headers['content-type'].split(';')[0]
         if content_type not in ['text/html', 'text/xml', 'application/xhtml+xml']:
-            self.log.debug("Content-type %s not parseable" % content_type)
+            cls.log.debug("Content-type %s not parseable" % content_type)
             return None
 
         if r.content:
             return BeautifulSoup(r.content, 'html.parser')
         return None
 
-    def get_json(self, *args, **kwargs):
+    @classmethod
+    def get_json(cls, url, **kwargs):
         ''' Fetch JSON from url. '''
-        r = self.get_url(*args, **kwargs)
+        r = cls.get_url(url=url, **kwargs)
         if not r:
             return None
 
