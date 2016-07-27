@@ -24,9 +24,6 @@ class URL(object):
         r'*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:/[^\s]*)?'
     )
 
-    here = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-    plugin_base = PluginBase(package='pyfibot.url.handlers')
-    plugin_source = plugin_base.make_plugin_source(searchpath=[os.path.join(here, 'handlers')])
     handlers = {}
     log = logging.getLogger('URL')
 
@@ -50,13 +47,18 @@ class URL(object):
     def get_urls(cls, string):
         return [URL(url) for url in set(re.findall(cls.url_regex, string))]
 
-    @staticmethod
-    def discover_handlers():
+    @classmethod
+    def discover_handlers(cls):
         URL.log.debug('Discovering URL handlers')
+
+        here = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+        cls.plugin_base = PluginBase(package='pyfibot.url.handlers')
+        cls.plugin_source = cls.plugin_base.make_plugin_source(searchpath=[os.path.join(here, 'handlers')])
+
         URL.handlers = {}
-        for plugin_name in URL.plugin_source.list_plugins():
+        for plugin_name in cls.plugin_source.list_plugins():
             try:
-                plugin = URL.plugin_source.load_plugin(plugin_name)
+                plugin = cls.plugin_source.load_plugin(plugin_name)
             except:
                 URL.log.error('Failed to load url handler "%s".' % plugin_name)
                 traceback.print_exc()
