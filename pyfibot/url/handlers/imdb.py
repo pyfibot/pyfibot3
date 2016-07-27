@@ -13,7 +13,7 @@ def imdb(bot, url, match):
     name = data['Title']
     year = data['Year']
     rating = data['imdbRating']
-    votes = data['imdbVotes'].replace(',', '')
+    votes = data['imdbVotes'].replace(',', '').replace('N/A', '0')
     genre = data['Genre'].lower()
 
     title = '%s (%s) - %s/10 (%s votes) - %s' % (name, year, rating, get_views_string(votes), genre)
