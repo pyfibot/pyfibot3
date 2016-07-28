@@ -47,7 +47,7 @@ class Episodes(Plugin):
             episode=next_episode.episode_number,
             title=next_episode.title,
             date=next_episode_time.strftime('%Y-%m-%d'),
-            relative_date=get_relative_time_string(next_episode_time)
+            relative_date=get_relative_time_string(next_episode_time, no_time=True)
         )
 
         # Not all shows have network info for some reason
@@ -122,7 +122,7 @@ class Episodes(Plugin):
             episode=int(float(episode['combined_episodenumber'])),
             title=episode['episodename'],
             date=episode_time.strftime('%Y-%m-%d'),
-            relative_date=get_relative_time_string(episode_time)
+            relative_date=get_relative_time_string(episode_time, no_time=True)
         )
 
         self.bot.respond(msg, raw_message)

@@ -37,7 +37,7 @@ def datetime_fromtimestamp(timestamp, tz=None):
     return datetime.fromtimestamp(timestamp, tz=dateutil.tz.gettz(tz))
 
 
-def get_duration_string(dt, maximum_elements=2, return_delta=False):
+def get_duration_string(dt, maximum_elements=2, no_time=False, return_delta=False):
     '''
     Return duration string between two datetimes.
 
@@ -45,6 +45,8 @@ def get_duration_string(dt, maximum_elements=2, return_delta=False):
     If dt is integer or float, it's considered to be seconds.
 
     Argument maximum_elements limits the maximum number of returned elements.
+
+    If no_time=True, don't return time at all, unless years or days weren't found.
 
     If argument return_delta is True, the number of seconds is sent together with
     the string.
@@ -83,11 +85,15 @@ def get_duration_string(dt, maximum_elements=2, return_delta=False):
         parts.append('%dy' % abs(years))
     if delta.days:
         parts.append('%dd' % abs(delta.days))
-    if delta.hours:
+
+    if years == 0 and delta.days == 0:
+        no_time = False
+
+    if not no_time and delta.hours:
         parts.append('%dh' % abs(delta.hours))
-    if delta.minutes:
+    if not no_time and delta.minutes:
         parts.append('%dm' % abs(delta.minutes))
-    if delta.seconds:
+    if not no_time and delta.seconds:
         parts.append('%ds' % abs(delta.seconds))
 
     timedelta_string = ' '.join(parts[0:maximum_elements])
@@ -97,10 +103,10 @@ def get_duration_string(dt, maximum_elements=2, return_delta=False):
     return timedelta_string, int(years * 365 * 86400 + delta.days * 86400 + delta.hours * 3600 + delta.seconds)
 
 
-def get_relative_time_string(dt, maximum_elements=2, lang='en'):
+def get_relative_time_string(dt, maximum_elements=2, no_time=False, lang='en'):
     '''
     Return relative time as string with the proper pre/suffix.
-    See get_duration_string documentation for dt and maximum_elements.
+    See get_duration_string for documentation.
     '''
     string_formats = {
         'en': {
@@ -113,7 +119,7 @@ def get_relative_time_string(dt, maximum_elements=2, lang='en'):
         },
     }
 
-    timedelta_string, delta = get_duration_string(dt, maximum_elements=maximum_elements, return_delta=True)
+    timedelta_string, delta = get_duration_string(dt, maximum_elements=maximum_elements, no_time=no_time, return_delta=True)
     if not timedelta_string:
         return None
 

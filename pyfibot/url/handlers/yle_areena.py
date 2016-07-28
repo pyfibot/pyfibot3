@@ -113,9 +113,9 @@ def yle_areena(bot, url):
         if duration:
             title_data.append(get_duration_string(duration))
         if broadcasted:
-            title_data.append(get_relative_time_string(broadcasted, lang='en'))
+            title_data.append(get_relative_time_string(broadcasted, no_time=True))
         if exits and get_utc_datetime() + timedelta(days=2 * 365) > exits:
-            title_data.append('exits %s' % get_relative_time_string(exits, maximum_elements=1))
+            title_data.append('exits %s' % get_relative_time_string(exits, no_time=True))
         if not OnDemandPublication:
             title_data.append('not available')
         return '%s [%s]' % (title, ' - '.join(title_data))
@@ -154,7 +154,7 @@ def yle_areena(bot, url):
         else:
             title_data.append('%i episodes' % len(data))
         if broadcasted:
-            title_data.append('latest episode: %s' % get_relative_time_string(broadcasted))
+            title_data.append('latest episode: %s' % get_relative_time_string(broadcasted, no_time=True))
 
         return '%s [%s]' % (title, ' - '.join(title_data))
 

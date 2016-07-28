@@ -167,13 +167,14 @@ class URL(object):
             if timestamp:
                 additional_info.append(
                     'uploaded %s' % get_relative_time_string(
-                        datetime.fromtimestamp(timestamp, tzutc())
+                        datetime.fromtimestamp(timestamp, tzutc()),
+                        no_time=True
                     )
                 )
             else:
                 date = info.get('upload_date') or info.get('release_date')
                 if date:
-                    additional_info.append('uploaded %s' % get_relative_time_string(parse_datetime(date)))
+                    additional_info.append('uploaded %s' % get_relative_time_string(parse_datetime(date), no_time=True))
 
         age_limit = info.get('age_limit')
         if age_limit:
