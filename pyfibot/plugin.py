@@ -46,6 +46,17 @@ class Plugin(object):
 
             if getattr(func, '_is_interval', False) is True:
                 self._periodic_tasks.append(PeriodicTask(func, func._interval, self.bot))
+                continue
+
+            if getattr(func, '_is_handler', False) is True:
+                message = getattr(func, '_message', None)
+                if isinstance(message, list):
+                    for m in message:
+                        self.bot.register_handler(m, func)
+
+                if isinstance(message, str):
+                    self.bot.register_handler(message, func)
+                continue
 
     @staticmethod
     def discover_plugins(bot):
@@ -144,6 +155,24 @@ class Plugin(object):
 
             listener_wrapper._is_listener = True
             return listener_wrapper
+
+    class handler(object):
+        '''
+        Decorator to build custom message handlers.
+        '''
+        def __init__(self, message):
+            self.message = message
+
+        def __call__(self, func):
+            def handler_wrapper(bot, raw_message):
+                try:
+                    return func(bot, raw_message)
+                except:
+                    bot.log.error('Error running handler.', exc_info=sys.exc_info())
+
+            handler_wrapper._message = self.message
+            handler_wrapper._is_handler = True
+            return handler_wrapper
 
     class interval(object):
         def __init__(self, interval, run_on_init=False):

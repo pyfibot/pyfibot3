@@ -44,3 +44,7 @@ class TestPlugin(Plugin):
     @Plugin.admin_command('raise_exception')
     def raise_exception(self, sender, message, raw_message):
         raise ValueError('TESTING!')
+
+    @Plugin.handler('JOIN')
+    def handle_join(self, raw_message):
+        print(raw_message)

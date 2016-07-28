@@ -40,10 +40,12 @@ class IRCbot(Bot):
             bot.send('USER', user=self.nickname, realname=self.realname)
             for channel in self.channels:
                 channel.join()
+            self.run_handlers('CLIENT_CONNECT', kwargs)
 
         @bot.on('CLIENT_DISCONNECT')
         def on_disconnect(**kwargs):
             self.reconnect()
+            self.run_handlers('CLIENT_DISCONNECT', kwargs)
 
         @bot.on('PING')
         def on_ping(message, **kwargs):
@@ -80,6 +82,7 @@ class IRCbot(Bot):
                 return
 
             channel.on_user_join(**raw_message)
+            self.run_handlers('JOIN', raw_message)
 
         @bot.on('PART')
         def on_part(**raw_message):
@@ -93,6 +96,7 @@ class IRCbot(Bot):
                 return
 
             channel.on_user_part(**raw_message)
+            self.run_handlers('PART', raw_message)
 
         @bot.on('RPL_WHOREPLY')
         def on_rpl_who(**raw_message):
@@ -106,6 +110,7 @@ class IRCbot(Bot):
                 return
 
             user.update_information(**raw_message)
+            self.run_handlers('RPL_WHOREPLY', raw_message)
 
         @bot.on('QUIT')
         def on_quit(**raw_message):
@@ -113,6 +118,7 @@ class IRCbot(Bot):
 
             for channel in self.channels:
                 channel.on_user_quit(nick)
+            self.run_handlers('QUIT', raw_message)
 
         self._bot = bot
 

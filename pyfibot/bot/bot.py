@@ -64,6 +64,7 @@ class Bot(object):
         self.callbacks = {
             'commands': self._get_builtin_commands(),
             'listeners': [],
+            'handlers': {},
         }
 
     @property
@@ -73,6 +74,10 @@ class Bot(object):
     @property
     def listeners(self):
         return self.callbacks.get('listeners', [])
+
+    @property
+    def handlers(self):
+        return self.callbacks.get('handlers', {})
 
     def is_admin(self, raw_message):
         ''' Get users admin status. '''
@@ -184,3 +189,12 @@ class Bot(object):
     def register_listener(self, function_handle):
         ''' Registers listener to the bot. '''
         self.callbacks['listeners'].append(function_handle)
+
+    def register_handler(self, message, function_handle):
+        if message not in self.callbacks['handlers']:
+            self.callbacks['handlers'][message] = []
+        self.callbacks['handlers'][message].append(function_handle)
+
+    def run_handlers(self, message, raw_message):
+        for handler in self.handlers.get(message, []):
+            self.core.loop.run_in_executor(None, handler, raw_message)
