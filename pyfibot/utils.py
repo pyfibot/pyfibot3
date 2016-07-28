@@ -2,6 +2,7 @@ import math
 from datetime import datetime, timedelta, tzinfo
 import dateutil.tz
 import dateutil.parser
+from dateutil.relativedelta import relativedelta
 
 
 def get_utc_datetime():
@@ -40,7 +41,7 @@ def get_duration_string(dt, maximum_elements=2, return_delta=False):
     '''
     Return duration string between two datetimes.
 
-    Argument dt can either be a datetime, timedelta, integer, or float.
+    Argument dt can either be a datetime, timedelta, relativedelta, integer, or float.
     If dt is integer or float, it's considered to be seconds.
 
     Argument maximum_elements limits the maximum number of returned elements.
@@ -48,46 +49,52 @@ def get_duration_string(dt, maximum_elements=2, return_delta=False):
     If argument return_delta is True, the number of seconds is sent together with
     the string.
     '''
-    if isinstance(dt, timedelta):
-        delta = dt.total_seconds()
-    elif isinstance(dt, int) or isinstance(dt, float):
+
+    if isinstance(dt, relativedelta):
         delta = dt
+    elif isinstance(dt, timedelta):
+        delta = relativedelta(seconds=dt.total_seconds())
+    elif isinstance(dt, int) or isinstance(dt, float):
+        delta = relativedelta(seconds=dt)
     elif isinstance(dt, datetime):
+        # Need to hack a bit, as relativedeltas taken between two dates are represented with
+        # years, months etc, while ones from seconds are not... And yes, even after .normalized()
         if dt.tzinfo is None:
-            now = datetime.now()
+            delta = relativedelta(seconds=(dt - datetime.now()).total_seconds())
         else:
-            now = get_timezone_datetime(tz=dt.tzinfo)
-        delta = (dt - now).total_seconds()
+            delta = relativedelta(seconds=(dt - get_timezone_datetime(tz=dt.tzinfo)).total_seconds())
+    else:
+        raise ValueError('Unsupported type for argument dt.')
 
-    secs = abs(delta)
+    delta = delta.normalized()
 
-    years = secs // 31536000
-    secs -= years * 31536000
+    # HACK HACK HACK!
+    # -25 // 365 == -1
+    # -(25 // 365) == 0
+    years = delta.days // 365 if delta.days > 0 else -(-delta.days // 365)
+    delta = delta - relativedelta(days=years * 365)
 
-    days = secs // 86400
-    secs -= days * 86400
-
-    hours, minutes, seconds = secs // 3600, secs // 60 % 60, secs % 60
-
+    #
     # TODO: possibly add rounding based on maximum_elements?
+    #
 
     parts = []
     if years:
-        parts.append('%dy' % years)
-    if days > 0:
-        parts.append('%dd' % days)
-    if hours > 0:
-        parts.append('%dh' % hours)
-    if minutes > 0:
-        parts.append('%dm' % minutes)
-    if int(seconds) > 0:
-        parts.append('%ds' % seconds)
+        parts.append('%dy' % abs(years))
+    if delta.days:
+        parts.append('%dd' % abs(delta.days))
+    if delta.hours:
+        parts.append('%dh' % abs(delta.hours))
+    if delta.minutes:
+        parts.append('%dm' % abs(delta.minutes))
+    if delta.seconds:
+        parts.append('%ds' % abs(delta.seconds))
 
     timedelta_string = ' '.join(parts[0:maximum_elements])
 
     if not return_delta:
         return timedelta_string
-    return timedelta_string, delta
+    return timedelta_string, int(years * 365 * 86400 + delta.days * 86400 + delta.hours * 3600 + delta.seconds)
 
 
 def get_relative_time_string(dt, maximum_elements=2, lang='en'):
