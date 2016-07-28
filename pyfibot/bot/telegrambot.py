@@ -1,5 +1,6 @@
 import aiotg
 from pyfibot.bot import Bot
+from pyfibot.utils import datetime_fromtimestamp, get_duration_string
 
 
 class TelegramBot(Bot):
@@ -7,6 +8,7 @@ class TelegramBot(Bot):
     def __init__(self, core, name):
         super(TelegramBot, self).__init__(core, name)
         self.api_token = self.configuration.get('api_token')
+        self.message_timeout = self.configuration.get('message_timeout', 15)
 
         if not self.api_token:
             raise AttributeError('TelegramBot API key not found!')
@@ -33,6 +35,12 @@ class TelegramBot(Bot):
         @bot.command(r'(.+)')
         def handle_message(chat, match):
             sender = chat.sender.get('id') or chat.sender.get('first_name', '')
+            _, delta = get_duration_string(datetime_fromtimestamp(chat.message.get('date'), 'UTC'), return_delta=True)
+
+            # Only handle messages newer than message timeout
+            if abs(delta) > self.message_timeout:
+                return
+
             message = match.group(1)
             raw_message = {
                 'chat': chat,
@@ -42,7 +50,8 @@ class TelegramBot(Bot):
             self.handle_message(sender, message, raw_message=raw_message)
 
         self._bot = bot
-        return self.core.loop.create_task(self._bot.loop())
+        task = self.core.loop.create_task(self._bot.loop())
+        task.add_done_callback(self.reconnect)
 
     def respond(self, message, raw_message):
         chat = raw_message.get('chat')

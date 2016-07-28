@@ -30,6 +30,12 @@ def parse_datetime(s):
     return dateutil.parser.parse(s)
 
 
+def datetime_fromtimestamp(timestamp, tz=None):
+    if tz is None:
+        return datetime.fromtimestamp(timestamp)
+    return datetime.fromtimestamp(timestamp, tz=dateutil.tz.gettz(tz))
+
+
 def get_duration_string(dt, maximum_elements=2, return_delta=False):
     '''
     Return duration string between two datetimes.
@@ -39,7 +45,7 @@ def get_duration_string(dt, maximum_elements=2, return_delta=False):
 
     Argument maximum_elements limits the maximum number of returned elements.
 
-    If argument return_delta is True, the actual delta value is sent together with
+    If argument return_delta is True, the number of seconds is sent together with
     the string.
     '''
     if isinstance(dt, timedelta):
