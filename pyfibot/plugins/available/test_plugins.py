@@ -1,6 +1,7 @@
 import time
 import random
 import string
+from pyfibot.bot.ircbot import IRCbot
 from pyfibot.plugin import Plugin
 
 
@@ -36,6 +37,8 @@ class TestPlugin(Plugin):
 
     @Plugin.interval(1)
     def print_tissit(self, bot):
+        if not isinstance(bot, IRCbot):
+            return
         bot.respond('TISSIT!', raw_message={'target': '#pyfibot'})
 
     @Plugin.admin_command('raise_exception')
