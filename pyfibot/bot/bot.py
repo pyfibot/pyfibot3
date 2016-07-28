@@ -1,3 +1,5 @@
+import time
+import random
 import logging
 from pyfibot.plugin import Plugin
 
@@ -79,6 +81,17 @@ class Bot(object):
     def connect(self):
         ''' Connect to server. '''
         raise NotImplementedError
+
+    def reconnect(self, fn=None):
+        sleep_time = random.randrange(5, 15, 1)
+        if not fn:
+            self.log.warning('%s disconnected. Reconnecting in %i seconds.' % (self.nickname, sleep_time))
+        else:
+            if not fn.exception():
+                return
+            self.log.warning('%s disconnected (%s). Reconnecting in %i seconds.' % (self.nickname, fn.exception(), sleep_time))
+        time.sleep(sleep_time)
+        self.connect()
 
     def cleanup_response(self, response):
         return response.strip()

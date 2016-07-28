@@ -1,5 +1,3 @@
-import time
-import random
 import bottom
 from pyfibot.bot import Bot
 
@@ -33,7 +31,7 @@ class IRCbot(Bot):
         )
         return any([admin == identifier for admin in self.admins])
 
-    def connect(self):
+    def connect(self, future=None):
         bot = bottom.Client(host=self.server, port=self.port, ssl=False, loop=self.core.loop)
 
         @bot.on('CLIENT_CONNECT')
@@ -45,10 +43,7 @@ class IRCbot(Bot):
 
         @bot.on('CLIENT_DISCONNECT')
         def on_disconnect(**kwargs):
-            sleep_time = random.randrange(5, 15, 1)
-            self.log.warning('%s disconnected. Reconnecting in %i seconds.' % (self.nickname, sleep_time))
-            time.sleep(sleep_time)
-            self.connect(self.core.loop)
+            self.reconnect()
 
         @bot.on('PING')
         def on_ping(message, **kwargs):
@@ -121,7 +116,8 @@ class IRCbot(Bot):
 
         self._bot = bot
 
-        return bot.loop.create_task(self._bot.connect())
+        task = bot.loop.create_task(self._bot.connect())
+        task.add_done_callback(self.reconnect)
 
     def find_channel(self, name):
         ''' Find channel from bot channels. '''
