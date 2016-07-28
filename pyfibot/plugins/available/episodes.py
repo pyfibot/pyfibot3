@@ -13,8 +13,10 @@ class Episodes(Plugin):
         try:
             show = pytvmaze.get_show(show_name=message, embed='episodes')
         except pytvmaze.exceptions.ShowNotFound:
-            self.bot.respond('Show "%s" not found.' % message, raw_message)
-            return
+            return self.bot.respond('Show "%s" not found.' % message, raw_message)
+
+        if not show.episodes:
+            return self.bot.respond('No new episodes found for "%s".' % show.name, raw_message)
 
         next_episode = None
         now = get_timezone_datetime(self.timezone)
@@ -32,11 +34,8 @@ class Episodes(Plugin):
             # episode is (still) in the future
             next_episode = episode
 
-        if show.status == 'Ended' or not next_episode:
-            try:
-                next_episode = show.episodes.pop()
-            except IndexError:
-                return self.bot.respond('No new episodes found for "%s".' % show.name, raw_message)
+        if not next_episode:
+            next_episode = show.episodes.pop()
             msg = 'Latest episode of "{show_name}" {season:d}x{episode:02d} "{title}" aired on {date} ({relative_date})'
         else:
             msg = 'Next episode of "{show_name}" {season:d}x{episode:02d} "{title}" airs on {date} ({relative_date})'
