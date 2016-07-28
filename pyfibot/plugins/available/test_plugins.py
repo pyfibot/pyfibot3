@@ -36,10 +36,10 @@ class TestPlugin(Plugin):
         self.bot.respond('Slept for %i seconds.' % sleep_time, raw_message)
 
     @Plugin.interval(1)
-    def print_tissit(self, bot):
-        if not isinstance(bot, IRCbot):
+    def print_tissit(self):
+        if not isinstance(self.bot, IRCbot):
             return
-        bot.respond('TISSIT!', raw_message={'target': '#pyfibot'})
+        self.bot.respond('TISSIT!', raw_message={'target': '#pyfibot'})
 
     @Plugin.admin_command('raise_exception')
     def raise_exception(self, sender, message, raw_message):

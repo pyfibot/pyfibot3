@@ -23,7 +23,7 @@ class PeriodicTask(object):
 
     def _run(self):
         try:
-            self._func(self._bot)
+            self._func()
         except:
             self.log.error('Error running task.', exc_info=sys.exc_info())
         self._set()
