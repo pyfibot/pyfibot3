@@ -1,5 +1,5 @@
 beautifulsoup4==4.6.0
-bottom==1.0.2
+bottom==2.1.0
 click==6.6
 dataset==0.6.4
 pluginbase==0.4
