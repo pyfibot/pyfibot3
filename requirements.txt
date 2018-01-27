@@ -8,5 +8,5 @@ python-slugify==1.2.4
 pytvmaze==2.0.8
 PyYAML==3.12
 requests==2.18.2
-youtube-dl==2017.12.31
+youtube-dl==2018.1.27
 tvdb-api==2.0
