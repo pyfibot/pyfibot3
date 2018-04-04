@@ -1,7 +1,7 @@
 beautifulsoup4==4.6.0
 bottom==2.1.0
 click==6.7
-dataset==0.8.0
+dataset==1.0.7
 pluginbase==0.5
 python-dateutil==2.6.1
 python-slugify==1.2.4
