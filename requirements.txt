@@ -1,3 +1,4 @@
+aiotg==0.9.9
 beautifulsoup4==4.6.0
 bottom==2.1.0
 click==6.7
