@@ -29,7 +29,7 @@ class Bot(object):
     @property
     def protocol(self):
         ''' Get the protocol of the bot. Useful for implement some plugins only in certain protocols etc. '''
-        return self.bot_configuration.get('protocol')
+        return self.configuration.get('protocol')
 
     @property
     def log(self):
