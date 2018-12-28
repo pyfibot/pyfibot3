@@ -9,6 +9,6 @@ python-dateutil==2.7.2
 python-slugify==1.2.4
 pytvmaze==2.0.8
 PyYAML==3.12
-requests==2.18.2
+requests>=2.20.0
 youtube-dl==2018.4.9
 tvdb-api==2.0
